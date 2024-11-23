@@ -14,9 +14,21 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [DeaDBeeF](https://github.com/pkgforge-dev/DeaDBeeF-AppImage)
 
+[DeSmuME](https://github.com/pkgforge-dev/DeSmuME-AppImage)
+
+[dunst](https://github.com/pkgforge-dev/dunst-AppImage)
+
+[htop](https://github.com/pkgforge-dev/htop-AppImage)
+
 [mpv](https://github.com/pkgforge-dev/mpv-AppImage)
 
 [OBS Studio](https://github.com/pkgforge-dev/OBS-Studio-AppImage)
+
+[pavucontrol-qt](https://github.com/pkgforge-dev/pavucontrol-qt-AppImage)
+
+[playerctl](https://github.com/pkgforge-dev/playerctl-AppImage)
+
+[polybar](https://github.com/pkgforge-dev/polybar-AppImage)
 
 [PPSSPP](https://github.com/pkgforge-dev/PPSSPP-AppImage)
 
@@ -24,14 +36,6 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [rofi](https://github.com/pkgforge-dev/rofi-AppImage)
 
+[SpeedCrunch](https://github.com/pkgforge-dev/SpeedCrunch-AppImage)
+
 [strawberry](https://github.com/pkgforge-dev/strawberry-AppImage)
-
-
-
-
-
-
-
-
-
-
