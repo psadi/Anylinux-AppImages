@@ -12,6 +12,8 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)
 
+[Cromite](https://github.com/pkgforge-dev/Cromite-AppImage)
+
 [DeaDBeeF](https://github.com/pkgforge-dev/DeaDBeeF-AppImage)
 
 [DeSmuME](https://github.com/pkgforge-dev/DeSmuME-AppImage)
