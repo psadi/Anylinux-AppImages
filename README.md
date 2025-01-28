@@ -12,6 +12,8 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)
 
+[Citron](https://github.com/pkgforge-dev/Citron-AppImage)
+
 [Cromite](https://github.com/pkgforge-dev/Cromite-AppImage)
 
 [Dolphin-emu](https://github.com/pkgforge-dev/Dolphin-emu-AppImage)
