@@ -28,6 +28,8 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [htop](https://github.com/pkgforge-dev/htop-AppImage)
 
+[kdeconnect](https://github.com/pkgforge-dev/kdeconnect-AppImage)
+
 [mpv](https://github.com/pkgforge-dev/mpv-AppImage)
 
 [OBS Studio](https://github.com/pkgforge-dev/OBS-Studio-AppImage)
