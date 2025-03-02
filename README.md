@@ -2,9 +2,11 @@
 
 Designed to run seamlessly on any Linux distribution, that includes old distrubiton and musl based ones. Our AppImages bundle all the needed dependencies and do not depend on host libraries to work unlike most other AppImages.
 
-Most of the AppImages are made with [sharun](https://github.com/VHSgunzo/sharun). and some also use an alternative better [runtime](https://github.com/VHSgunzo/uruntime).
+Most of the AppImages are made with [sharun](https://github.com/VHSgunzo/sharun). we also use an alternative better [runtime](https://github.com/VHSgunzo/uruntime).
 
-The only dependency we have is a `fusermount` binary in `PATH`, but even this isn't extrictly needed as these AppImages can still work by setting the `APPIMAGE_EXTRACT_AND_RUN=1` env variable. 
+~~The only dependency we have is a `fusermount` binary in `PATH`, but even this isn't extrictly needed as these AppImages can still work by setting the `APPIMAGE_EXTRACT_AND_RUN=1` env variable.~~
+
+**UPDATE:** Now the uruntime [automatically falls back to using extract and run](https://github.com/VHSgunzo/uruntime?tab=readme-ov-file#built-in-configuration) if fuse is not available at all, so now we **truly have 0 requirements.**
 
 We also try to avoid the usage of containers and other methods that depend on user namespaces and so far none of the AppImages need it in order to work.
 
