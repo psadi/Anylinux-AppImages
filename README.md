@@ -52,6 +52,8 @@ We also try to avoid the usage of containers and other methods that depend on us
 
 [SpeedCrunch](https://github.com/pkgforge-dev/SpeedCrunch-AppImage)
 
+[st](https://github.com/pkgforge-dev/st-AppImage)
+
 [strawberry](https://github.com/pkgforge-dev/strawberry-AppImage)
 
 [Torzu](https://github.com/pkgforge-dev/Torzu-AppImage)
