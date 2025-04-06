@@ -8,6 +8,9 @@ The uruntime [automatically falls back to using extract and run](https://github.
 
 We also try to avoid the usage of containers and other methods, so far the only AppImage that depends on them is Lutris. 
 
+
+**How is this possible?** See: [How to guide](https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/HOW-TO-MAKE-THESE.md)
+
 ---------------------------------------------------------------------------------------------
 
 [Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)
