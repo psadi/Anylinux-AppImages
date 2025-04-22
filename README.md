@@ -15,6 +15,8 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)
 
+[AppImageUpdate](https://github.com/pkgforge-dev/AppImageUpdate-Enhanced-Edition)
+
 [Citron](https://github.com/pkgforge-dev/Citron-AppImage)
 
 [Cromite](https://github.com/pkgforge-dev/Cromite-AppImage)
