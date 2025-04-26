@@ -65,4 +65,6 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [Torzu](https://github.com/pkgforge-dev/Torzu-AppImage)
 
+[UnleashedRecomp](https://github.com/pkgforge-dev/UnleashedRecomp-AppImage)
+
 [Zenity](https://github.com/pkgforge-dev/Zenity-GTK3-AppImage)
