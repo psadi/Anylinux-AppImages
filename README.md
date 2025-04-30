@@ -19,6 +19,8 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [ares-emu](https://github.com/pkgforge-dev/ares-emu-appimage)
 
+[Azahar](https://github.com/pkgforge-dev/Azahar-AppImage-Enhanced)
+
 [Citron](https://github.com/pkgforge-dev/Citron-AppImage)
 
 [Cromite](https://github.com/pkgforge-dev/Cromite-AppImage)
