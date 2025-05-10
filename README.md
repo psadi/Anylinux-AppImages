@@ -35,7 +35,7 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [Ghostty](https://github.com/pkgforge-dev/ghostty-appimage)
 
-[GIMP](https://github.com/pkgforge-dev/GIMP-AppImage)
+[GIMP-and-PhotoGIMP](https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage)
 
 [htop](https://github.com/pkgforge-dev/htop-AppImage)
 
