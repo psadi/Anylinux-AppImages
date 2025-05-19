@@ -13,6 +13,8 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 ---------------------------------------------------------------------------------------------
 
+[alacritty](https://github.com/pkgforge-dev/alacritty-AppImage)
+
 [Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)
 
 [AppImageUpdate](https://github.com/pkgforge-dev/AppImageUpdate-Enhanced-Edition)
