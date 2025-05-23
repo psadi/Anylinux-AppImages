@@ -35,6 +35,8 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [dunst](https://github.com/pkgforge-dev/dunst-AppImage)
 
+[EasyTAG](https://github.com/pkgforge-dev/EasyTAG-AppImage)
+
 [Ghostty](https://github.com/pkgforge-dev/ghostty-appimage)
 
 [GIMP-and-PhotoGIMP](https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage)
