@@ -59,7 +59,7 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [polybar](https://github.com/pkgforge-dev/polybar-AppImage)
 
-[PPSSPP](https://github.com/pkgforge-dev/PPSSPP-AppImage)
+~[PPSSPP](https://github.com/pkgforge-dev/PPSSPP-AppImage)~ - [Upstreamed](https://github.com/hrydgard/ppsspp/releases).
 
 [puddletag](https://github.com/pkgforge-dev/puddletag-AppImage)
 
