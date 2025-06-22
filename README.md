@@ -41,6 +41,8 @@ We also try to avoid the usage of containers and other methods, so far the only 
 
 [GIMP-and-PhotoGIMP](https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage)
 
+[gpu-screen-recorder](https://github.com/pkgforge-dev/gpu-screen-recorder-AppImage)
+
 [htop](https://github.com/pkgforge-dev/htop-AppImage)
 
 [kdeconnect](https://github.com/pkgforge-dev/kdeconnect-AppImage)
