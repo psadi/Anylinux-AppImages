@@ -50,3 +50,7 @@ We also try to avoid the usage of containers and other methods; so far, the only
 | 34  | [transmission-qt](https://github.com/pkgforge-dev/transmission-qt-AppImage)                                              |
 | 35  | [UnleashedRecomp](https://github.com/pkgforge-dev/UnleashedRecomp-AppImage)                                              |
 | 36  | [Zenity](https://github.com/pkgforge-dev/Zenity-GTK3-AppImage)                                                           |
+
+---
+
+Also see [other projects](https://github.com/VHSgunzo/sharun?tab=readme-ov-file#projects-that-use-sharun) that use sharun for more. 
