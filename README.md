@@ -28,7 +28,7 @@ We also try to avoid the usage of containers and other methods; so far, the only
 | 12  | [EasyTAG](https://github.com/pkgforge-dev/EasyTAG-AppImage)                                                              |
 | 13  | [Ghostty](https://github.com/pkgforge-dev/ghostty-appimage)                                                              |
 | 14  | [GIMP-and-PhotoGIMP](https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage)                                        |
-| 15  | [Gnome Pomodoro](https://github.com/pkgforge-dev/gnome-pomodoro-appimage.git)                                            |
+| 15  | [Gnome Pomodoro](https://github.com/pkgforge-dev/gnome-pomodoro-appimage)                                                |
 | 16  | [gpu-screen-recorder](https://github.com/pkgforge-dev/gpu-screen-recorder-AppImage)                                      |
 | 17  | [htop](https://github.com/pkgforge-dev/htop-AppImage)                                                                    |
 | 18  | [kdeconnect](https://github.com/pkgforge-dev/kdeconnect-AppImage)                                                        |
