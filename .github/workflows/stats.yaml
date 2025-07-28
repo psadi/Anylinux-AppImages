@@ -22,13 +22,12 @@ jobs:
       - name: Get stats
         run: |
           LIST="https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/heads/main/README.md"
-          REPOS="$(wget -q "$LIST" -O - | awk -F'[(|)]' '/^|\[/{print $4}' | awk -F'/' '$NF!="" {print $NF}')"
-
+          REPOS="$(wget -q "$LIST" -O - | sed -n '0,/---/d; p' | sed 's/[()",{} ]/\n/g' | grep -i 'https.*pkgforge-dev.*AppImage.*' | awk -F'/' '{print $NF}')"
+          
           for REPO in $REPOS; do
           	NUM=$(wget -q "https://api.github.com/repos/pkgforge-dev/$REPO/releases?per_page=100" -O - \
           		| ./gron.awk | awk -F'=' '/download_count/ {total += $2} END {print total}')
-
-          	[ -n "$NUM" ] || continue
+          	[ -n "$NUM" ] || exit 1
           	echo "${REPO}: $NUM "
           	TOTAL=$(( TOTAL + NUM ))
           done
