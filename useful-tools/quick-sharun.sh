@@ -85,7 +85,6 @@ for bin do
 			*libgtk-3*.so*)      DEPLOY_GTK=1; GTK_DIR=gtk-3.0;;
 			*libgtk-4*.so*)      DEPLOY_GTK=1; GTK_DIR=gtk-4.0;;
 			*libgdk_pixbuf*.so*) DEPLOY_GDK=1                 ;;
-			*libOpenGL.so*)      DEPLOY_OPENGL=1              ;;
 			*libpipewire*.so*)   DEPLOY_PIPEWIRE=1            ;;
 		esac
 	done
