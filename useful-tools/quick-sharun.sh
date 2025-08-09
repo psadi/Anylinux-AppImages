@@ -182,7 +182,7 @@ if [ "$DEPLOY_OPENGL" = 1 ] || [ "$DEPLOY_VULKAN" = 1 ]; then
 fi
 
 if [ "$DEPLOY_PIPEWIRE" = 1 ]; then
-	echo "* Deploying pipewire"
+	_echo "* Deploying pipewire"
 	set -- "$@" \
 		"$LIB_DIR"/pipewire-*/* \
 		"$LIB_DIR"/spa-*/*      \
