@@ -4,6 +4,9 @@
 # It will download both the uruntime and mkdwarfs
 # The only dependency is zsyncmake
 
+# By default it will assume that the AppDir is in the $PWD
+# And will output the AppImage there as well
+
 set -e
 
 ARCH=${ARCH:-$(uname -m)}
@@ -105,6 +108,13 @@ if [ ! -x "$RUNTIME" ]; then
 	_echo "Downloading uruntime from $URUNTIME_LINK"
 	_download "$RUNTIME" "$URUNTIME_LINK"
 	chmod +x "$RUNTIME"
+fi
+
+if [ "$URUNTIME_PRELOAD" = 1 ]; then
+	_echo "------------------------------------------------------------"
+	_echo "Setting runtime to always keep the mount point..."
+	_echo "------------------------------------------------------------"
+	sed -i -e 's|URUNTIME_MOUNT=[0-9]|URUNTIME_MOUNT=0|' "$RUNTIME"
 fi
 
 if [ -n "$UPINFO" ]; then
