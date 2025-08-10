@@ -37,6 +37,15 @@ _download() {
 
 _try_to_find_icon() {
 	>&2 echo "No $APPDIR/.DirIcon found, trying to find it in $APPDIR"
+
+	# try the first top level .png or .svg before searching
+	if cp -v "$APPDIR"/*.png "$APPDIR"/.DirIcon 2>/dev/null \
+	  || cp -v "$APPDIR"/*.svg "$APPDIR"/.DirIcon 2>/dev/null; then
+		echo "Found $icon and copied it to $APPDIR/.DirIcon"
+		return 0
+	fi
+
+	# Now search depper
 	icon_name=$(awk -F'=' '/^Icon=/{print $2; exit}' "$APPDIR"/*.desktop)
 	icon=$(find "$APPDIR" -type f -name "$icon_name".png -print -quit)
 	if [ -n "$icon" ] && cp -v "$icon" "$APPDIR"/.DirIcon; then
@@ -45,7 +54,6 @@ _try_to_find_icon() {
 		return 1
 	fi
 }
-
 
 if [ ! -f "$APPDIR"/*.desktop ]; then
 	>&2 echo "ERROR: No top level .desktop file found in $APPDIR"
