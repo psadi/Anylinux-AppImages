@@ -41,7 +41,7 @@ _try_to_find_icon() {
 	# try the first top level .png or .svg before searching
 	if cp -v "$APPDIR"/*.png "$APPDIR"/.DirIcon 2>/dev/null \
 	  || cp -v "$APPDIR"/*.svg "$APPDIR"/.DirIcon 2>/dev/null; then
-		echo "Found $icon and copied it to $APPDIR/.DirIcon"
+		>&2 echo "Found icon and copied it to $APPDIR/.DirIcon"
 		return 0
 	fi
 
@@ -49,7 +49,7 @@ _try_to_find_icon() {
 	icon_name=$(awk -F'=' '/^Icon=/{print $2; exit}' "$APPDIR"/*.desktop)
 	icon=$(find "$APPDIR" -type f -name "$icon_name".png -print -quit)
 	if [ -n "$icon" ] && cp -v "$icon" "$APPDIR"/.DirIcon; then
-		echo "Found $icon and copied it to $APPDIR/.DirIcon"
+		>&2 echo "Found $icon and copied it to $APPDIR/.DirIcon"
 	else
 		return 1
 	fi
