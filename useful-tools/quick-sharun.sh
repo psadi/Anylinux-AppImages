@@ -144,9 +144,6 @@ fi
 if [ "$DEPLOY_GTK" = 1 ]; then
 	_echo "* Deploying $GTK_DIR"
 	DEPLOY_GDK=1
-	if [ "$GTK_DIR" = "gtk-4.0" ]; then
-		DEPLOY_OPENGL=1
-	fi
 	set -- "$@" \
 		"$LIB_DIR"/"$GTK_DIR"/*/immodules/*  \
 		"$LIB_DIR"/gio/modules/libdconfsettings.so
