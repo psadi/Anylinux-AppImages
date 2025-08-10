@@ -42,7 +42,7 @@ case "$1" in
 		>&2 echo "--strip"
 		exit 1
 		;;
-	-*)
+	l)
 		echo "Using user provided flags instead of defaults"
 		DEFAULT_FLAGS=0
 		;;
@@ -221,7 +221,7 @@ if [ "$DEFAULT_FLAGS" = 1 ]; then
 		--strip            \
 		"$@"
 else
-	$XVFB_CMD /tmp/sharun-aio l "$@"
+	$XVFB_CMD /tmp/sharun-aio "$@"
 fi
 
 echo ""
