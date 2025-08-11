@@ -236,7 +236,7 @@ fi
 
 if [ -n "$ADD_HOOKS" ]; then
 	IFS=':'
-	set -- "$ADD_HOOKS"
+	set -- $ADD_HOOKS
 	hook_dst="$APPDIR"/bin
 	for hook do
 		if _download "$hook_dst"/"$hook" "$HOOKSRC"/"$hook"; then
