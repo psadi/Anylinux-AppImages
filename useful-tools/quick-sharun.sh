@@ -8,8 +8,10 @@
 set -e
 
 ARCH="$(uname -m)"
-
-SHARUN_LINK="${SHARUN_LINK:-https://github.com/VHSgunzo/sharun/releases/latest/download/sharun-$ARCH-aio}"
+APPRUN=${APPRUN:-AppRun-generic}
+APPDIR=${APPDIR:-$PWD/AppDir}
+SHARUN_LINK=${SHARUN_LINK:-https://github.com/VHSgunzo/sharun/releases/latest/download/sharun-$ARCH-aio}
+HOOKSRC=${HOOKSRC:-https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/heads/main/useful-tools}
 DEFAULT_FLAGS=1
 
 DEPLOY_QT=${DEPLOY_QT:-0}
@@ -18,8 +20,27 @@ DEPLOY_OPENGL=${DEPLOY_OPENGL:-0}
 DEPLOY_VULKAN=${DEPLOY_VULKAN:-0}
 DEPLOY_PIPEWIRE=${DEPLOY_PIPEWIRE:-0}
 
+# for sharun
+export DST_DIR="$APPDIR"
+export GEN_LIB_PATH=1
+
 _echo() {
 	printf '\033[1;92m%s\033[0m\n' "$*"
+}
+
+
+_download() {
+	if command -v wget 1>/dev/null; then
+		DOWNLOAD_CMD="wget"
+		set -- -qO "$@"
+	elif command -v curl 1>/dev/null; then
+		DOWNLOAD_CMD="curl"
+		set -- -Lso "$@"
+	else
+		>&2 echo "ERROR: we need wget or curl to download $1"
+		exit 1
+	fi
+	"$DOWNLOAD_CMD" "$@"
 }
 
 case "$1" in
@@ -62,14 +83,7 @@ fi
 
 if [ ! -x /tmp/sharun-aio ]; then
 	_echo "Downloading sharun..."
-	if command -v wget 1>/dev/null; then
-		wget -q "$SHARUN_LINK" -O /tmp/sharun-aio  || exit 1
-	elif command -v curl 1>/dev/null; then
-		curl -Ls "$SHARUN_LINK" -o /tmp/sharun-aio || exit 1
-	else
-		>&2 echo "ERROR: we need wget or curl to download sharun"
-		exit 1
-	fi
+	_download /tmp/sharun-aio "$SHARUN_LINK"
 	chmod +x /tmp/sharun-aio
 fi
 
@@ -209,7 +223,6 @@ if [ "$DEFAULT_FLAGS" = 1 ]; then
 	mkdir -p ./AppDir
 	$XVFB_CMD \
 		/tmp/sharun-aio l  \
-		--dst-dir ./AppDir \
 		--verbose          \
 		--with-hooks       \
 		--strace-mode      \
@@ -220,6 +233,28 @@ if [ "$DEFAULT_FLAGS" = 1 ]; then
 else
 	$XVFB_CMD /tmp/sharun-aio "$@"
 fi
+
+if [ -n "$ADD_HOOKS" ]; then
+	IFS=':'
+	set -- "$ADD_HOOKS"
+	hook_dst="$APPDIR"/bin
+	for hook do
+		if _download "$hook_dst"/"$hook" "$HOOKSRC"/"$hook"; then
+			echo ""
+			_echo "* Added $hook"
+			echo ""
+		else
+			>&2 echo "ERROR: Failed to download $hook, valid link?"
+			>&2 echo "$HOOKSRC/$hook"
+		fi
+	done
+	if [ ! -f "$APPDIR"/AppRun ]; then
+		_echo "* Adding $APPRUN..."
+		_download "$APPDIR"/AppRun "$HOOKSRC"/"$APPRUN"
+	fi
+fi
+
+chmod +x "$APPDIR"/AppRun "$APPDIR"/bin/*.hook 2>/dev/null || true
 
 echo ""
 _echo "------------------------------------------------------------"
