@@ -5,6 +5,10 @@
 # NOTE2: If you do not need the hooks DO NOT USE THIS SCRIPT!!
 # sharun itself can work as teh AppRun and that is much better!
 
+if [ "$APPRUN_DEBUG" = 1 ]; then
+	set -x
+fi
+
 set -e
 
 CURRENTDIR="$(cd "${0%/*}" && echo "$PWD")"
