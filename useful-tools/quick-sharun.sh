@@ -252,6 +252,9 @@ if [ -n "$ADD_HOOKS" ]; then
 		_echo "* Adding $APPRUN..."
 		_download "$APPDIR"/AppRun "$HOOKSRC"/"$APPRUN"
 	fi
+elif [ ! -f "$APPDIR"/AppRun ]; then
+	_echo "* Hardlinking "$APPDIR"/sharun as "$APPDIR"/AppRun..."
+	ln -v "$APPDIR"/sharun "$APPDIR"/AppRun
 fi
 
 chmod +x "$APPDIR"/AppRun "$APPDIR"/bin/*.hook 2>/dev/null || true
