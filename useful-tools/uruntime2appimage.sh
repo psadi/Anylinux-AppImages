@@ -55,7 +55,14 @@ _try_to_find_icon() {
 	fi
 }
 
-if [ ! -f "$APPDIR"/*.desktop ]; then
+if [ ! -d "$APPDIR" ]; then 
+	>&2 echo "ERROR: No $APPDIR directory found"
+	>&2 echo "Set APPDIR if you have it at another location"
+	exit 1
+elif [ ! -f "$APPDIR"/AppRun ]; then
+	>&2 echo "ERROR: No $APPDIR/AppRun file found!"
+	exit 1
+elif [ ! -f "$APPDIR"/*.desktop ]; then
 	>&2 echo "ERROR: No top level .desktop file found in $APPDIR"
 	>&2 echo "Note it cannot be more than .desktop file in that location"
 	exit 1
@@ -65,6 +72,9 @@ elif [ ! -f "$APPDIR"/.DirIcon ] && ! _try_to_find_icon; then
 elif [ ! -w "$OUTPATH" ]; then
 	>&2 echo "ERROR: No write access to $OUTPATH"
 	exit 1
+elif [ ! -x "$APPDIR"/AppRun ]; then
+	>&2 echo "WARNING: Fixing exec perms of $APPDIR/AppRun"
+	chmod +x "$APPDIR"/AppRun
 fi
 
 if [ -z "$OUTNAME" ]; then
