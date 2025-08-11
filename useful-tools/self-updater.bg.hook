@@ -18,10 +18,12 @@
 
 set -e
 
-CACHEDIR="${XDG_CACHE_HOME:-$HOME/.cache}"
-LOCKFILEPATH="$CACHEDIR"/."${APPIMAGE##*/}"-disable-update-check
-UPDATE_MSG="${UPDATE_MSG:-A new version of ${APPIMAGE##*/} is available. Do you wish to update?}"
-POST_UPDATE="${APPIMAGE##*/} updated suscesfully!"
+CACHEDIR="${XDG_CACHE_HOME:-$HOME/.cache}"/auto-updates-policy
+LOCKFILEPATH="$CACHEDIR"/"$APPNAME"-update-setting
+APPNAME=${APPIMAGE##*/}
+WELCOME_MSG=${WELCOME_MSG:-Do you want $APPNAME to check for updates?}
+UPDATE_MSG="${UPDATE_MSG:-A new version of $APPNAME is available. Do you wish to update?}"
+POST_UPDATE="$APPNAME updated suscesfully!"
 DO_NOT_ASK="Do you wish to not see this message again?"
 
 # make sure we can update the thing
@@ -60,9 +62,9 @@ _check_update() {
 	set -e
 	# exit code >1 likely indicates the app was not correctly packaged
 	case "$status" in
-		0) >&2 echo " ${APPIMAGE##*/} is up to date"; return 1;;
-		1) >&2 echo " ${APPIMAGE##*/} update is available"; return 0;;
-		*) >&2 echo " ${APPIMAGE##*/} update check failed"; exit 0;;
+		0) >&2 echo " $APPNAME is up to date"; return 1;;
+		1) >&2 echo " $APPNAME update is available"; return 0;;
+		*) >&2 echo " $APPNAME update check failed"; exit 0;;
 	esac
 }
 
@@ -70,24 +72,46 @@ _update() {
 	appimageupdatetool -Or "$APPIMAGE"
 }
 
-_do_not_ask_again() {
-	mkdir -p "$CACHEDIR"
-	echo "delete me to enable again" > "$LOCKFILEPATH"
+_create_updates_setting() {
+	if [ ! -f "$LOCKFILEPATH" ]; then
+		mkdir -p "$CACHEDIR"
+		echo "2" > "$LOCKFILEPATH"
+	fi
+}
+
+_enable_update_checking() {
+	echo "1" > "$LOCKFILEPATH"
+}
+
+_disable_update_checking() {
+	echo "0" > "$LOCKFILEPATH"
 }
 
 # if check fails exit without error so that the app can still launch
 _sanity_check 1>/dev/null || exit 0
 
-# now check if there is no lockfile and check for updates
-if [ -f "$LOCKFILEPATH" ]; then
+# Make the lockfile if it does not exist
+_create_updates_setting
+
+# Now read the file and determine what to do
+read -r STATUS < "$LOCKFILEPATH"
+if [ "$STATUS" = 2 ]; then
+	if _display_message "$WELCOME_MSG"; then
+		_enable_update_checking
+	else
+		_disable_update_checking
+	fi
+elif [ "$STATUS" = 0 ]; then
 	exit 0
-elif _check_update; then
-	if _display_message "$UPDATE_MSG"; then
-		_update
-		if command -v notify-send 1>/dev/null; then
-			notify-send "$POST_UPDATE"
+elif [ "$STATUS" = 1 ]; then
+	if _check_update; then
+		if _display_message "$UPDATE_MSG"; then
+			_update
+			if command -v notify-send 1>/dev/null; then
+				notify-send "$POST_UPDATE"
+			fi
+		elif _display_message "$DO_NOT_ASK"; then
+			_disable_update_checking
 		fi
-	elif _display_message "$DO_NOT_ASK"; then
-		_do_not_ask_again
 	fi
 fi
