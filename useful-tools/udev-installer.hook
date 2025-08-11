@@ -90,12 +90,25 @@ _check_udev() {
 }
 
 _install_udev() {
+	set -u
 	SUDOCMD="$(command -v pkexec || command -v lxqt-sudo)"
+
+	# due to some weird issue I noticed in kubuntu, we do not have
+	# permission to copy the dir from the FUSE filesystem to /usr/local
+	# we need to instead copy the dir first to the user's home and then
+	# copy it over to /usr/local...
+
+	# just in case there is something funny there already
+	rm -rf "$CACHEDIR"/.tmp-udev-rules
+	cp -rv "$UDEVDIR" "$CACHEDIR"/.tmp-udev-rules
+	UDEVDIR="$CACHEDIR"/.tmp-udev-rules
+
 	"$SUDOCMD" /bin/sh -c "
 	  mkdir -p /usr/local/lib/udev/rules.d
 	  cp -v '$UDEVDIR'/* /usr/local/lib/udev/rules.d
 	  command -v udevadm && udevadm control --reload-rules
 	"
+	rm -rf "$UDEVDIR"
 }
 
 _do_not_ask_again() {
