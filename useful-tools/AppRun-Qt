@@ -4,6 +4,10 @@
 # setst the var APPIMAGE_QT_THEME to it and passes it to the array to be loaded
 # NOTE: It is meant to be used with sharun which uses a top level bin dir
 
+if [ "$APPRUN_DEBUG" = 1 ]; then
+	set -x
+fi
+
 set -e
 
 CURRENTDIR="$(cd "${0%/*}" && echo "$PWD")"
