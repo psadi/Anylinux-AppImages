@@ -74,7 +74,9 @@ _download() {
 _get_appimageupdatetool() {
 	if command -v appimageupdatetool 1>/dev/null; then
 		return 0
-	elif _download "$BINDIR"/appimageupdatetool "$APPIMAGEUPDATETOOL_LINK"; then
+	fi
+	mkdir -p "$BINDIR"
+	if _download "$BINDIR"/appimageupdatetool "$APPIMAGEUPDATETOOL_LINK"; then
 		chmod +x "$BINDIR"/appimageupdatetool
 	else
 		return 1
