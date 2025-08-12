@@ -241,26 +241,32 @@ else
 	$XVFB_CMD /tmp/sharun-aio "$@"
 fi
 
+echo ""
+_echo "------------------------------------------------------------"
+echo ""
+
 if [ -n "$ADD_HOOKS" ]; then
 	IFS=':'
 	set -- $ADD_HOOKS
 	hook_dst="$APPDIR"/bin
 	for hook do
 		if _download "$hook_dst"/"$hook" "$HOOKSRC"/"$hook"; then
-			echo ""
 			_echo "* Added $hook"
 			echo ""
 		else
 			>&2 echo "ERROR: Failed to download $hook, valid link?"
 			>&2 echo "$HOOKSRC/$hook"
+			exit 1
 		fi
 	done
-	if [ ! -f "$APPDIR"/AppRun ]; then
-		_echo "* Adding $APPRUN..."
-		_download "$APPDIR"/AppRun "$HOOKSRC"/"$APPRUN"
-	fi
+fi
+
+set -- "$APPDIR"/bin/*.hook
+if [ -f "$1" ] && [ ! -f "$APPDIR"/AppRun ]; then
+	_echo "* Adding $APPRUN..."
+	_download "$APPDIR"/AppRun "$HOOKSRC"/"$APPRUN"
 elif [ ! -f "$APPDIR"/AppRun ]; then
-	_echo "* Hardlinking "$APPDIR"/sharun as "$APPDIR"/AppRun..."
+	_echo "* Hardlinking $APPDIR/sharun as $APPDIR/AppRun..."
 	ln -v "$APPDIR"/sharun "$APPDIR"/AppRun
 fi
 
@@ -269,11 +275,17 @@ chmod +x "$APPDIR"/AppRun "$APPDIR"/bin/*.hook 2>/dev/null || true
 if [ -f "$DESKTOP" ]; then
 	_echo "* Adding $DESKTOP to $APPDIR..."
 	cp -v "$DESKTOP" "$APPDIR"
+elif [ -n "$DESKTOP" ]; then
+	_echo "* Downloading $DESKTOP to $APPDIR..."
+	_download "$APPDIR"/"${DESKTOP##*/}" "$DESKTOP"
 fi
 
 if [ -f "$ICON" ]; then
 	_echo "* Adding $ICON to $APPDIR..."
 	cp -v "$ICON" "$APPDIR"
+elif [ -n "$ICON" ]; then
+	_echo "* Downloading $ICON to $APPDIR..."
+	_download "$APPDIR"/"${ICON##*/}" "$ICON"
 fi
 
 echo ""
