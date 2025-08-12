@@ -2,11 +2,7 @@
 
 # Helper script in POSIX shell to self update appimages in place
 
-# depends on appimageupdatetool which can either be installed by the user
-# or be bundled in the application
-
-# if you want to bundle appimageupdateool check this fork instead since it is
-# a lot smaller:https://github.com/pkgforge-dev/AppImageUpdate-Enhanced-Edition
+# depends on appimageupdatetool which will be downloaded if not available
 
 # simple make sure you have your AppRun call this script before starting the
 # main application, that is all that's needed.
@@ -18,20 +14,21 @@
 
 set -e
 
-CACHEDIR="${XDG_CACHE_HOME:-$HOME/.cache}"/auto-updates-policy
-LOCKFILEPATH="$CACHEDIR"/"$APPNAME"-update-setting
+BINDIR=${XDG_BIN_HOME:-$HOME/.local/bin}
+PATH="$PATH:$BINDIR"
+CONFIGDIR=${XDG_CONFIG_HOME:-$HOME/.cache}/auto-updates-policy
+CONFIGFILEPATH="$CONFIGDIR"/"$APPNAME"-update-setting
 APPNAME=${APPIMAGE##*/}
-WELCOME_MSG=${WELCOME_MSG:-Do you want $APPNAME to check for updates?}
+WELCOME_MSG=${WELCOME_MSG:-Allow $APPNAME to check for updates? NOTE: We will download appimageupdatetool in $BINDIR if not available}
 UPDATE_MSG="${UPDATE_MSG:-A new version of $APPNAME is available. Do you wish to update?}"
-POST_UPDATE="$APPNAME updated suscesfully!"
-DO_NOT_ASK="Do you wish to not see this message again?"
+POST_UPDATE_GOOD="$APPNAME updated successfully!"
+POST_UPDATE_BAD="ERROR: Something went wrong updating $APPNAME"
+DO_NOT_ASK="Do you wish to disable update checking and not see this message again?"
+APPIMAGEUPDATETOOL_LINK="${APPIMAGEUPDATETOOL_LINK:-https://github.com/AppImageCommunity/AppImageUpdate/releases/latest/download/appimageupdatetool-x86_64.AppImage}"
 
 # make sure we can update the thing
 _sanity_check() {
 	if [ -z "$APPIMAGE" ]; then
-		return 1
-	elif ! command -v appimageupdatetool; then
-		>&2 echo "Install appimageupdatetool in PATH to get self updates"
 		return 1
 	elif [ ! -w "$APPIMAGE" ]; then
 		>&2 echo "We cannot to overwrite $APPIMAGE due to lack of permissions"
@@ -55,6 +52,35 @@ _display_message() {
 	fi
 }
 
+_download() {
+	url="$2"
+	dest="$1"
+	if ! _display_message "Do you wish to download '$url' in '$dest'?"; then
+		return 1
+	elif command -v wget 1>/dev/null; then
+		DOWNLOAD_CMD="wget"
+		set -- -qO "$@"
+	elif command -v curl 1>/dev/null; then
+		DOWNLOAD_CMD="curl"
+		set -- -Lso "$@"
+	else
+		>&2 echo "ERROR: we need wget or curl to download ${dest##*/}"
+		_display_message "ERROR: we need wget or curl to download ${dest##*/}"
+		exit 1
+	fi
+	"$DOWNLOAD_CMD" "$@"
+}
+
+_get_appimageupdatetool() {
+	if command -v appimageupdatetool 1>/dev/null; then
+		return 0
+	elif _download "$BINDIR"/appimageupdatetool "$APPIMAGEUPDATETOOL_LINK"; then
+		chmod +x "$BINDIR"/appimageupdatetool
+	else
+		return 1
+	fi
+}
+
 _check_update() {
 	set +e
 	appimageupdatetool -j "$APPIMAGE"
@@ -69,49 +95,59 @@ _check_update() {
 }
 
 _update() {
-	appimageupdatetool -Or "$APPIMAGE"
+	if appimageupdatetool -Or "$APPIMAGE"; then
+		>&2 echo "$POST_UPDATE_GOOD"
+		notify-send "$POST_UPDATE_GOOD" 2>/dev/null || true
+	else
+		>&2 echo "$POST_UPDATE_BAD"
+		notify-send "$POST_UPDATE_BAD" 2>/dev/null || true
+	fi
+
 }
 
-_create_updates_setting() {
-	if [ ! -f "$LOCKFILEPATH" ]; then
-		mkdir -p "$CACHEDIR"
-		echo "2" > "$LOCKFILEPATH"
+_make_configfile() {
+	if [ ! -f "$CONFIGFILEPATH" ]; then
+		mkdir -p "$CONFIGDIR"
+		echo "2" > "$CONFIGFILEPATH"
 	fi
 }
 
 _enable_update_checking() {
-	echo "1" > "$LOCKFILEPATH"
+	echo "1" > "$CONFIGFILEPATH"
 }
 
 _disable_update_checking() {
-	echo "0" > "$LOCKFILEPATH"
+	echo "0" > "$CONFIGFILEPATH"
 }
 
 # if check fails exit without error so that the app can still launch
 _sanity_check 1>/dev/null || exit 0
 
-# Make the lockfile if it does not exist
-_create_updates_setting
+# Make the configfile if it does not exist
+_make_configfile
 
 # Now read the file and determine what to do
-read -r STATUS < "$LOCKFILEPATH"
-if [ "$STATUS" = 2 ]; then
-	if _display_message "$WELCOME_MSG"; then
-		_enable_update_checking
-	else
-		_disable_update_checking
-	fi
-elif [ "$STATUS" = 0 ]; then
+read -r STATUS < "$CONFIGFILEPATH"
+if [ "$STATUS" = 0 ]; then
+	>&2 echo "self updates disabled by $CONFIGFILEPATH"
 	exit 0
 elif [ "$STATUS" = 1 ]; then
-	if _check_update; then
+	if ! _get_appimageupdatetool; then
+		if _display_message "$DO_NOT_ASK"; then
+			_disable_update_checking
+		fi
+	elif _check_update; then
 		if _display_message "$UPDATE_MSG"; then
 			_update
-			if command -v notify-send 1>/dev/null; then
-				notify-send "$POST_UPDATE"
-			fi
 		elif _display_message "$DO_NOT_ASK"; then
 			_disable_update_checking
 		fi
+	fi
+else
+	if _display_message "$WELCOME_MSG"; then
+		_enable_update_checking
+		_get_appimageupdatetool
+	else
+		_disable_update_checking
 	fi
 fi
