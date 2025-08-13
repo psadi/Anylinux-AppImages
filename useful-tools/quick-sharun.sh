@@ -185,10 +185,11 @@ if [ "$DEPLOY_OPENGL" = 1 ] || [ "$DEPLOY_VULKAN" = 1 ]; then
 	if [ "$DEPLOY_OPENGL" = 1 ]; then
 		_echo "* Deploying OpenGL"
 		set -- "$@" \
-			"$LIB_DIR"/libEGL*.so* \
-			"$LIB_DIR"/libGLX*.so* \
-			"$LIB_DIR"/libGL.so*   \
-			"$LIB_DIR"/libOpenGL.so*
+			"$LIB_DIR"/libEGL*.so*   \
+			"$LIB_DIR"/libGLX*.so*   \
+			"$LIB_DIR"/libGL.so*     \
+			"$LIB_DIR"/libOpenGL.so* \
+			"$LIB_DIR"/libGLESv2.so*
 	fi
 
 	if [ "$DEPLOY_VULKAN" = 1 ]; then
