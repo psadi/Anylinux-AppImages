@@ -10,6 +10,8 @@
 - [Further considerations](#further-considerations)
   - [Isn’t this very bloated?](#isnt-this-very-bloated)
   - [What about nvidia?](#what-about-nvidia)
+- [Alright I'm sold, how do I start?](#alright-im-sold-how-do-i-start)
+
 
 -----------------------------------
 
@@ -214,3 +216,25 @@ Goes without saying that sharun handles all of this already on its own.
 | - |
 
 -----------------------------------
+
+### *Alright I'm sold, how do I start?*
+
+We have a helper script over sharun called [`quick-sharun`](https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/useful-tools/quick-sharun.sh) that greatly simplifies deployment of AppImages down to a few simple oneliners. 
+
+We also have a hook system that helps deal with common issues like installing [udev-rules](https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/useful-tools/udev-installer.hook), [fixing namespaces restriction](https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/useful-tools/fix-namespaces.hook) for apps that need them, [making the AppImage self updatable](https://github.com/pkgforge-dev/Anylinux-AppImages/blob/main/useful-tools/self-updater.bg.hook), etc
+
+See the following examples where these scripts are used: 
+
+* [Cromite](https://github.com/pkgforge-dev/Cromite-AppImage/blob/fabd380217cf5e64cd448195674a9bf80c2f521f/cromite-appimage.sh#L5-L55)
+* [Azahar](https://github.com/pkgforge-dev/Azahar-AppImage-Enhanced/blob/7716accbc41a848b5734e7caa8eb697e38b38bcc/azahar-appimage.sh#L69-L98)
+* [scrcpy](https://github.com/pkgforge-dev/scrcpy-AppImage/blob/3d69b2be0806dac0b0c8a08d0a5711a297a68761/scrcpy-appimage.sh#L5-L43)
+
+
+-----------------------------------
+
+| [Back to Index](#index) |
+| - |
+
+-----------------------------------
+
+
