@@ -205,7 +205,7 @@ if [ "$DEPLOY_PIPEWIRE" = 1 ]; then
 		"$LIB_DIR"/pipewire-*/* \
 		"$LIB_DIR"/spa-*/*      \
 		"$LIB_DIR"/spa-*/*/*    \
-		"$LIB_DIR"/alsa-lib/*
+		"$LIB_DIR"/alsa-lib/*pipewire*.so*
 fi
 
 
