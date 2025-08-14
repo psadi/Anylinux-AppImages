@@ -347,7 +347,23 @@ fi
 
 chmod +x "$APPDIR"/AppRun "$APPDIR"/bin/*.hook 2>/dev/null || true
 
-if [ -f "$DESKTOP" ]; then
+if [ "$DESKTOP" = "DUMMY" ]; then
+	# use the first binary name in shared/bin as filename
+	set -- "$APPDIR"/shared/bin/*
+	[ -f "$1" ] || exit 1
+	f=${1##*/}
+	_echo "* Adding dummy $f desktop entry to $APPDIR..."
+	cat <<-EOF > "$APPDIR"/"$f".desktop
+	[Desktop Entry]
+	Name=$f
+	Exec=$f
+	Comment=Dummy made by quick-sharun
+	Type=Application
+	Hidden=true
+	Categories=Utility
+	Icon=$f
+	EOF
+elif [ -f "$DESKTOP" ]; then
 	_echo "* Adding $DESKTOP to $APPDIR..."
 	cp -v "$DESKTOP" "$APPDIR"
 elif [ -n "$DESKTOP" ]; then
@@ -355,7 +371,15 @@ elif [ -n "$DESKTOP" ]; then
 	_download "$APPDIR"/"${DESKTOP##*/}" "$DESKTOP"
 fi
 
-if [ -f "$ICON" ]; then
+if [ "$ICON" = "DUMMY" ]; then
+	# use the first binary name in shared/bin as filename
+	set -- "$APPDIR"/shared/bin/*
+	[ -f "$1" ] || exit 1
+	f=${1##*/}
+	_echo "* Adding dummy $f icon to $APPDIR..."
+	:> "$APPDIR"/"$f".png
+	:> "$APPDIR"/.DirIcon
+elif [ -f "$ICON" ]; then
 	_echo "* Adding $ICON to $APPDIR..."
 	cp -v "$ICON" "$APPDIR"
 elif [ -n "$ICON" ]; then
