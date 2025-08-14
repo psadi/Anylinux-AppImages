@@ -105,7 +105,10 @@ fi
 
 for bin do
 	# ignore flags
-	case "$bin" in -*) continue;; esac
+	case "$bin" in
+		-*) continue;;
+		--) break   ;;
+	esac
 
 	# check linked libraries and enable each mode accordingly
 	for lib in $(ldd "$bin" | awk '{print $1}'); do
