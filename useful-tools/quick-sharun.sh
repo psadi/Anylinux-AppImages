@@ -178,8 +178,9 @@ if [ "$DEPLOY_GTK" = 1 ]; then
 	_echo "* Deploying $GTK_DIR"
 	DEPLOY_GDK=1
 	set -- "$@" \
-		"$LIB_DIR"/"$GTK_DIR"/*/immodules/* \
-		"$LIB_DIR"/gvfs/libgvfscommon.so    \
+		"$LIB_DIR"/"$GTK_DIR"/*/immodules/*   \
+		"$LIB_DIR"/gvfs/libgvfscommon.so      \
+		"$LIB_DIR"/gio/modules/libgvfsdbus.so \
 		"$LIB_DIR"/gio/modules/libdconfsettings.so
 fi
 
