@@ -25,6 +25,7 @@ DEPLOY_GTK=${DEPLOY_GTK:-0}
 DEPLOY_OPENGL=${DEPLOY_OPENGL:-0}
 DEPLOY_VULKAN=${DEPLOY_VULKAN:-0}
 DEPLOY_PIPEWIRE=${DEPLOY_PIPEWIRE:-0}
+DEPLOY_DATADIR=${DEPLOY_DATADIR:-1}
 
 # for sharun
 export DST_DIR="$APPDIR"
@@ -245,6 +246,25 @@ fi
 echo ""
 _echo "------------------------------------------------------------"
 echo ""
+
+if [ "$DEPLOY_DATADIR" = 1 ]; then
+	for bin do
+		# ignore flags and libs
+		case "$bin" in -*|*.so*) continue;; esac
+
+		bin="${bin##*/}"
+		for datadir in /usr/local/share/* /usr/share/*; do
+			if echo "$datadir" | grep -qi "$bin"; then
+				mkdir -p "$APPDIR/share"
+				_echo "* Adding datadir $datadir..."
+				cp -vr "$datadir" "$APPDIR/share"
+				echo ""
+				break
+			fi
+		done
+	done
+fi
+
 
 if [ -n "$ADD_HOOKS" ]; then
 	IFS=':'
