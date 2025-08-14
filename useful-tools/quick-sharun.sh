@@ -14,10 +14,13 @@
 set -e
 
 ARCH="$(uname -m)"
+TMPDIR=${TMPDIR:-/tmp}
 APPRUN=${APPRUN:-AppRun-generic}
 APPDIR=${APPDIR:-$PWD/AppDir}
 SHARUN_LINK=${SHARUN_LINK:-https://github.com/VHSgunzo/sharun/releases/latest/download/sharun-$ARCH-aio}
 HOOKSRC=${HOOKSRC:-https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/heads/main/useful-tools}
+LD_PRELOAD_OPEN=${LD_PRELOAD_OPEN:-https://github.com/fritzw/ld-preload-open.git}
+
 DEFAULT_FLAGS=1
 
 DEPLOY_QT=${DEPLOY_QT:-0}
@@ -26,15 +29,21 @@ DEPLOY_OPENGL=${DEPLOY_OPENGL:-0}
 DEPLOY_VULKAN=${DEPLOY_VULKAN:-0}
 DEPLOY_PIPEWIRE=${DEPLOY_PIPEWIRE:-0}
 DEPLOY_DATADIR=${DEPLOY_DATADIR:-1}
+DEPLOY_LOCALE=${DEPLOY_LOCALE:-0}
+
+LOCALE_DIR=${LOCALE_DIR:-/usr/share/locale}
 
 # for sharun
 export DST_DIR="$APPDIR"
 export GEN_LIB_PATH=1
 
 _echo() {
-	printf '\033[1;92m%s\033[0m\n' "$*"
+	printf '\033[1;92m%s\033[0m\n' " $*"
 }
 
+_err_msg(){
+	>&2 printf '\033[1;31m%s\033[0m\n' " $*"
+}
 
 _download() {
 	if command -v wget 1>/dev/null; then
@@ -44,7 +53,7 @@ _download() {
 		DOWNLOAD_CMD="curl"
 		set -- -Lso "$@"
 	else
-		>&2 echo "ERROR: we need wget or curl to download $1"
+		_err_msg "ERROR: we need wget or curl to download $1"
 		exit 1
 	fi
 	"$DOWNLOAD_CMD" "$@"
@@ -52,22 +61,22 @@ _download() {
 
 case "$1" in
 	''|--help)
-		>&2 echo "USAGE: ${0##*/} /path/to/binaries_and_libraries"
-		>&2 echo
-		>&2 echo "You can also pass flags for sharun, example:"
-		>&2 echo "${0##*/} l -p -v -s /path/to/bins_and_libs"
-		>&2 echo
-		>&2 echo "You can also force bundling with vars, example:"
-		>&2 echo "DEPLOY_OPENGL=1 ${0##*/} /path/to/bins"
-		>&2 echo
-		>&2 echo "If first argument is not a flag we will default to:"
-		>&2 echo "--dst-dir ./AppDir"
-		>&2 echo "--verbose"
-		>&2 echo "--with-hooks"
-		>&2 echo "--strace-mode"
-		>&2 echo "--gen-lib-path"
-		>&2 echo "--hard-links"
-		>&2 echo "--strip"
+		_err_msg "USAGE: ${0##*/} /path/to/binaries_and_libraries"
+		_err_msg
+		_err_msg "You can also pass flags for sharun, example:"
+		_err_msg "${0##*/} l -p -v -s /path/to/bins_and_libs"
+		_err_msg
+		_err_msg "You can also force bundling with vars, example:"
+		_err_msg "DEPLOY_OPENGL=1 ${0##*/} /path/to/bins"
+		_err_msg
+		_err_msg "If first argument is not a flag we will default to:"
+		_err_msg "--dst-dir ./AppDir"
+		_err_msg "--verbose"
+		_err_msg "--with-hooks"
+		_err_msg "--strace-mode"
+		_err_msg "--gen-lib-path"
+		_err_msg "--hard-links"
+		_err_msg "--strip"
 		exit 1
 		;;
 	l)
@@ -82,16 +91,16 @@ if [ -z "$LIB_DIR" ]; then
 	elif [ -d "/usr/lib" ]; then
 		LIB_DIR="/usr/lib"
 	else
-		>&2 echo "ERROR: there is no /usr/lib directory in this system"
-		>&2 echo "set the LIB_DIR variable to where you have libraries"
+		_err_msg "ERROR: there is no /usr/lib directory in this system"
+		_err_msg "set the LIB_DIR variable to where you have libraries"
 		exit 1
 	fi
 fi
 
-if [ ! -x /tmp/sharun-aio ]; then
+if [ ! -x "$TMPDIR"/sharun-aio ]; then
 	_echo "Downloading sharun..."
-	_download /tmp/sharun-aio "$SHARUN_LINK"
-	chmod +x /tmp/sharun-aio
+	_download "$TMPDIR"/sharun-aio "$SHARUN_LINK"
+	chmod +x "$TMPDIR"/sharun-aio
 fi
 
 for bin do
@@ -112,22 +121,22 @@ for bin do
 done
 
 if [ "$DEPLOY_QT" = 1 ] && [ -z "$QT_DIR" ]; then
-	>&2 echo
-	>&2 echo "WARNING: Qt deployment was forced but we do not know what"
-	>&2 echo "version of Qt needs to be deployed!"
-	>&2 echo "We will default to Qt6, if you do not want that set the"
-	>&2 echo "QT_DIR variable to the name of the Qt dir in $LIB_DIR"
-	>&2 echo
+	_err_msg
+	_err_msg "WARNING: Qt deployment was forced but we do not know what"
+	_err_msg "version of Qt needs to be deployed!"
+	_err_msg "We will default to Qt6, if you do not want that set the"
+	_err_msg "QT_DIR variable to the name of the Qt dir in $LIB_DIR"
+	_err_msg
 	QT_DIR=qt6
 fi
 
 if [ "$DEPLOY_GTK" = 1 ] && [ -z "$GTK_DIR" ]; then
-	>&2 echo
-	>&2 echo "WARNING: GTK deployment was forced but we do not know what"
-	>&2 echo "version of GTK needs to be deployed!"
-	>&2 echo "We will default to gtk-3.0, if you do not want that set the"
-	>&2 echo "GTK_DIR variable to the name of the gtk dir in $LIB_DIR"
-	>&2 echo
+	_err_msg
+	_err_msg "WARNING: GTK deployment was forced but we do not know what"
+	_err_msg "version of GTK needs to be deployed!"
+	_err_msg "We will default to gtk-3.0, if you do not want that set the"
+	_err_msg "GTK_DIR variable to the name of the gtk dir in $LIB_DIR"
+	_err_msg
 	GTK_DIR=gtk-3.0
 fi
 
@@ -214,12 +223,12 @@ fi
 if command -v xvfb-run 1>/dev/null; then
 	XVFB_CMD="xvfb-run -a --"
 else
-	>&2 echo "WARNING: xvfb-run was not detected on the system"
-	>&2 echo "xvfb-run is used with sharun for strace mode, this is needed"
-	>&2 echo "to find dlopened libraries as normally this script is going"
-	>&2 echo "to be run in a headless enviromment where the application"
-	>&2 echo "will fail to start and result strace mode will not be able"
-	>&2 echo "to find the libraries dlopened by the application"
+	_err_msg "WARNING: xvfb-run was not detected on the system"
+	_err_msg "xvfb-run is used with sharun for strace mode, this is needed"
+	_err_msg "to find dlopened libraries as normally this script is going"
+	_err_msg "to be run in a headless enviromment where the application"
+	_err_msg "will fail to start and result strace mode will not be able"
+	_err_msg "to find the libraries dlopened by the application"
 	XVFB_CMD=""
 	sleep 3
 fi
@@ -231,31 +240,70 @@ _echo "------------------------------------------------------------"
 if [ "$DEFAULT_FLAGS" = 1 ]; then
 	mkdir -p ./AppDir
 	$XVFB_CMD \
-		/tmp/sharun-aio l  \
-		--verbose          \
-		--with-hooks       \
-		--strace-mode      \
-		--gen-lib-path     \
-		--hard-links       \
-		--strip            \
+		"$TMPDIR"/sharun-aio l  \
+		--verbose               \
+		--with-hooks            \
+		--strace-mode           \
+		--gen-lib-path          \
+		--hard-links            \
+		--strip                 \
 		"$@"
 else
-	$XVFB_CMD /tmp/sharun-aio "$@"
+	$XVFB_CMD "$TMPDIR"/sharun-aio "$@"
 fi
 
 echo ""
 _echo "------------------------------------------------------------"
 echo ""
 
-if [ "$DEPLOY_DATADIR" = 1 ]; then
-	for bin do
-		# ignore flags and libs
-		case "$bin" in -*|*.so*) continue;; esac
+if [ -n "$PATH_MAPPING" ]; then
+	case "$PATH_MAPPING" in
+		*'${SHARUN_DIR}'*) true;;
+		*)
+			_err_msg 'ERROR: PATH_MAPPING must contain unexpanded'
+			_err_msg '${SHARUN_DIR} variable for this to work'
+			_err_msg 'Example:'
+			_err_msg "'PATH_MAPPING=/etc:\${SHARUN_DIR}/etc'"
+			_err_msg 'NOTE: The braces in the variable are needed'
+			exit 1
+			;;
+	esac
 
+	deps="git make"
+	for d in $deps; do
+		if ! command -v "$d" 1>/dev/null; then
+			_err_msg "ERROR: Using PATH_MAPPING requires $d"
+			exit 1
+		fi
+	done
+
+	_echo "* Building $LD_PRELOAD_OPEN..."
+
+	rm -rf "$TMPDIR"/ld-preload-open
+	git clone "$LD_PRELOAD_OPEN" "$TMPDIR"/ld-preload-open && (
+		cd "$TMPDIR"/ld-preload-open
+		make all
+	)
+
+	mv -v "$TMPDIR"/ld-preload-open/path-mapping.so "$APPDIR"/lib
+	echo "path-mapping.so" >> "$APPDIR"/.preload
+	echo "PATH_MAPPING=$PATH_MAPPING" >> "$APPDIR"/.env
+	_echo "* PATH_MAPPING successfully added!"
+	echo ""
+elif [ "$PATH_MAPPING_RELATIVE" = 1 ]; then
+	sed -i -e 's|/usr|././|g' "$APPDIR"/shared/bin/*
+	echo 'SHARUN_WORKING_DIR=${SHARUN_DIR}' >> "$APPDIR"/.env
+	_echo "* Patched away /usr from binaries..."
+	echo ""
+fi
+
+if [ "$DEPLOY_DATADIR" = 1 ]; then
+	for bin in "$APPDIR"/bin/*; do
+		[ -x "$bin" ] || continue
 		bin="${bin##*/}"
 		for datadir in /usr/local/share/* /usr/share/*; do
 			if echo "$datadir" | grep -qi "$bin"; then
-				mkdir -p "$APPDIR/share"
+				mkdir -p "$APPDIR"/share
 				_echo "* Adding datadir $datadir..."
 				cp -vr "$datadir" "$APPDIR/share"
 				echo ""
@@ -265,6 +313,12 @@ if [ "$DEPLOY_DATADIR" = 1 ]; then
 	done
 fi
 
+if [ "$DEPLOY_LOCALE" = 1 ]; then
+	mkdir -p "$APPDIR"/share
+	_echo "* Adding locales..."
+	cp -vr "$LOCALE_DIR" "$APPDIR"/share
+	echo ""
+fi
 
 if [ -n "$ADD_HOOKS" ]; then
 	IFS=':'
@@ -275,8 +329,8 @@ if [ -n "$ADD_HOOKS" ]; then
 			_echo "* Added $hook"
 			echo ""
 		else
-			>&2 echo "ERROR: Failed to download $hook, valid link?"
-			>&2 echo "$HOOKSRC/$hook"
+			_err_msg "ERROR: Failed to download $hook, valid link?"
+			_err_msg "$HOOKSRC/$hook"
 			exit 1
 		fi
 	done
