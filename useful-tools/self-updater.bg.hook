@@ -15,11 +15,11 @@
 set -e
 
 ARCH="$(uname -m)"
+APPNAME=${APPIMAGE##*/}
 BINDIR=${XDG_BIN_HOME:-$HOME/.local/bin}
 PATH="$PATH:$BINDIR"
-CONFIGDIR=${XDG_CONFIG_HOME:-$HOME/.cache}/auto-updates-policy
+CONFIGDIR=${XDG_CONFIG_HOME:-$HOME/.config}/auto-updates-policy
 CONFIGFILEPATH="$CONFIGDIR"/"$APPNAME"-update-setting
-APPNAME=${APPIMAGE##*/}
 WELCOME_MSG=${WELCOME_MSG:-Allow $APPNAME to check for updates? NOTE: We will download appimageupdatetool in $BINDIR if not available}
 UPDATE_MSG="${UPDATE_MSG:-A new version of $APPNAME is available. Do you wish to update?}"
 POST_UPDATE_GOOD="$APPNAME updated successfully!"
