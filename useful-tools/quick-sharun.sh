@@ -31,6 +31,7 @@ DEPLOY_PIPEWIRE=${DEPLOY_PIPEWIRE:-0}
 DEPLOY_DATADIR=${DEPLOY_DATADIR:-1}
 DEPLOY_LOCALE=${DEPLOY_LOCALE:-0}
 
+DEBLOAT_LOCALE=${DEBLOAT_LOCALE:-1}
 LOCALE_DIR=${LOCALE_DIR:-/usr/share/locale}
 
 # for sharun
@@ -322,6 +323,23 @@ if [ "$DEPLOY_LOCALE" = 1 ]; then
 	mkdir -p "$APPDIR"/share
 	_echo "* Adding locales..."
 	cp -vr "$LOCALE_DIR" "$APPDIR"/share
+	if [ "$DEBLOAT_LOCALE" = 1 ]; then
+		_echo "* Removing unneeded locales..."
+		set -- \
+		    ! -name '*glib*' \
+		    ! -name '*gdk*'  \
+		    ! -name '*gtk*'  \
+		    ! -name '*tls*'  \
+		    ! -name '*p11*'  \
+		    ! -name '*v4l*'  \
+		    ! -name '*obs*'  \
+		    ! -name '*gettext*'
+		for f in "$APPDIR"/shared/bin/*; do
+			f=${f##*/}
+			set -- "$@" ! -name "*$f*"
+		done
+		find "$APPDIR"/share/locale "$@" -type f -delete
+	fi
 	echo ""
 fi
 
