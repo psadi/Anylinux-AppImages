@@ -15,11 +15,20 @@
 set -e
 
 ARCH="$(uname -m)"
+APPDIR=${APPDIR:-$SHARUN_DIR}
 APPNAME=${APPIMAGE##*/}
+
 BINDIR=${XDG_BIN_HOME:-$HOME/.local/bin}
 PATH="$PATH:$BINDIR"
-CONFIGDIR=${XDG_CONFIG_HOME:-$HOME/.config}/auto-updates-policy
-CONFIGFILEPATH="$CONFIGDIR"/"$APPNAME"-update-setting
+
+DATADIR=${XDG_DATA_HOME:-$HOME/.local/share}/appimagekit
+CONFIGDIR=${UPDATE_POLICY_CONFIGDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/auto-updates-policy}
+
+set -- "$APPDIR"/*.desktop
+entry=${1##*/}
+entry=${entry%.desktop}
+CONFIGFILEPATH="$CONFIGDIR"/"$entry"-update-setting
+
 WELCOME_MSG=${WELCOME_MSG:-Allow $APPNAME to check for updates? NOTE: We will download appimageupdatetool in $BINDIR if not available}
 UPDATE_MSG="${UPDATE_MSG:-A new version of $APPNAME is available. Do you wish to update?}"
 POST_UPDATE_GOOD="$APPNAME updated successfully!"
@@ -29,7 +38,10 @@ APPIMAGEUPDATETOOL_LINK="${APPIMAGEUPDATETOOL_LINK:-https://github.com/AppImageC
 
 # make sure we can update the thing
 _sanity_check() {
-	if [ -z "$APPIMAGE" ]; then
+	if [ -f "$CONFIGDIR"/no_updatecheck ] \
+	  || [ -f "$DATADIR"/no_updatecheck ]; then
+		return 1
+	elif [ -z "$APPIMAGE" ] || [ -z "$APPDIR" ]; then
 		return 1
 	elif [ ! -w "$APPIMAGE" ]; then
 		>&2 echo "We cannot to overwrite $APPIMAGE due to lack of permissions"
@@ -40,6 +52,8 @@ _sanity_check() {
 	  && ! command -v zenity \
 	  && ! command -v kdialog; then
 		return 1
+	elif [ ! -d "$CONFIGDIR" ]; then
+		mkdir -p "$CONFIGDIR"
 	fi
 }
 
@@ -110,7 +124,6 @@ _update() {
 
 _make_configfile() {
 	if [ ! -f "$CONFIGFILEPATH" ]; then
-		mkdir -p "$CONFIGDIR"
 		echo "2" > "$CONFIGFILEPATH"
 	fi
 }
