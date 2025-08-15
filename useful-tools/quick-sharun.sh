@@ -167,11 +167,12 @@ if [ "$DEPLOY_QT" = 1 ]; then
 
 	_echo "* Deploying $QT_DIR"
 	set -- "$@" \
-		"$LIB_DIR"/"$QT_DIR"/plugins/imageformats/*.so*  \
-		"$LIB_DIR"/"$QT_DIR"/plugins/iconengines/*.so*   \
-		"$LIB_DIR"/"$QT_DIR"/plugins/platform*/*.so*     \
-		"$LIB_DIR"/"$QT_DIR"/plugins/styles/*.so*        \
-		"$LIB_DIR"/"$QT_DIR"/plugins/wayland-*/*.so*     \
+		"$LIB_DIR"/"$QT_DIR"/plugins/imageformats/*.so* \
+		"$LIB_DIR"/"$QT_DIR"/plugins/iconengines/*.so*  \
+		"$LIB_DIR"/"$QT_DIR"/plugins/platform*/*.so*    \
+		"$LIB_DIR"/"$QT_DIR"/plugins/styles/*.so*       \
+		"$LIB_DIR"/"$QT_DIR"/plugins/tls/*.so*          \
+		"$LIB_DIR"/"$QT_DIR"/plugins/wayland-*/*.so*    \
 		"$LIB_DIR"/"$QT_DIR"/plugins/xcbglintegrations/*.so*
 fi
 
