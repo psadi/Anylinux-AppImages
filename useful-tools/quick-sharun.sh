@@ -332,7 +332,6 @@ if [ "$DEPLOY_LOCALE" = 1 ]; then
 		    ! -name '*tls*'  \
 		    ! -name '*p11*'  \
 		    ! -name '*v4l*'  \
-		    ! -name '*obs*'  \
 		    ! -name '*gettext*'
 		for f in "$APPDIR"/shared/bin/*; do
 			f=${f##*/}
