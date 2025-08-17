@@ -461,6 +461,32 @@ elif [ -n "$ICON" ]; then
 	_download "$APPDIR"/"${ICON##*/}" "$ICON"
 fi
 
+# copy the entire hicolor icons dir and remove unneeded icons
+mkdir -p "$APPDIR"/share/icons
+cp -r /usr/share/icons/hicolor "$APPDIR"/share/icons
+
+set --
+for f in "$APPDIR"/shared/bin/*; do
+	f=${f##*/}
+	set -- ! -name "*$f*" "$@"
+done
+
+# also include names of top level .desktop and icon
+if [ -n "$DESKTOP" ]; then
+	DESKTOP=${DESKTOP##*/}
+	DESKTOP=${DESKTOP%.desktop}
+	set -- ! -name "*$DESKTOP*" "$@"
+fi
+
+if [ -n "$ICON" ]; then
+	ICON=${ICON##*/}
+	ICON=${ICON%.png}
+	ICON=${ICON%.svg}
+	set -- ! -name "*$ICON*" "$@"
+fi
+
+find "$APPDIR"/share/icons/hicolor "$@" -type f -delete
+
 echo ""
 _echo "------------------------------------------------------------"
 _echo "Finished deployment!"
