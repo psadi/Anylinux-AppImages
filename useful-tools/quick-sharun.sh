@@ -306,7 +306,30 @@ fi
 ARRAY=$(_save_array "$@")
 eval set -- "$TO_DEPLOY_ARRAY" "$ARRAY"
 
+if [ -n "$PYTHON_PACKAGES" ]; then
+	STRACE_MODE=0
+fi
 $XVFB_CMD "$TMPDIR"/sharun-aio l "$@"
+
+# strace the individual python pacakges
+if [ -n "$PYTHON_PACKAGES" ]; then
+	# if not unset for some reason lib4bin will replace the top level
+	# sharun with a hardlink to python breaking everything
+	unset  WITH_PYTHON PYTHON_VER
+
+	old_ifs="$IFS"
+	IFS=':'
+	set -- $PYTHON_PACKAGES
+	IFS="$old_ifs"
+
+	for pypkg do
+		pybin="$APPDIR"/bin/"$pypkg"
+		[ -e "$pybin" ] || continue
+		_echo "Running strace on python package $pypkg..."
+		$XVFB_CMD "$TMPDIR"/sharun-aio l \
+			--strace-mode  "$APPDIR"/sharun -- "$pybin"
+	done
+fi
 
 echo ""
 _echo "------------------------------------------------------------"
