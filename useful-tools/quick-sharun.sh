@@ -40,9 +40,17 @@ export WITH_HOOKS=1
 export STRACE_MODE="${STRACE_MODE:-1}"
 export VERBOSE=1
 
+if [ "$DEPLOY_PYTHON" = 1 ]; then
+	export WITH_PYTHON=1
+	export PYTHON_VER=${PYTHON_VER:-3.12}
+fi
+
 if [ -z "$NO_STRIP" ]; then
 	export STRIP=1
 fi
+
+# github actions doesn't set USER
+export USER=${USER:-USER}
 
 _echo() {
 	printf '\033[1;92m%s\033[0m\n' " $*"
@@ -52,21 +60,21 @@ _err_msg(){
 	>&2 printf '\033[1;31m%s\033[0m\n' " $*"
 }
 
-case "$1" in
-	''|--help)
+if [ -z "$1" ] || [ "$1" = "--help" ]; then
+	 if [ -z "$PYTHON_PACKAGES" ]; then
 		_err_msg "USAGE: ${0##*/} /path/to/binaries_and_libraries"
 		_err_msg
 		_err_msg "You can also force bundling with vars, example:"
 		_err_msg "DEPLOY_OPENGL=1 ${0##*/} /path/to/bins"
 		_err_msg
 		exit 1
-		;;
-	*)
-		if [ -e "$1" ] && [ "$2" = "--" ]; then
-			STRACE_ARGS_PROVIDED=1
-		fi
-		;;
-esac
+	fi
+fi
+
+if [ -e "$1" ] && [ "$2" = "--" ]; then
+	STRACE_ARGS_PROVIDED=1
+fi
+
 
 if [ -z "$LIB_DIR" ]; then
 	if [ -d "/usr/lib/$ARCH-linux-gnu" ]; then
@@ -131,7 +139,7 @@ _determine_what_to_deploy() {
 		esac
 
 		# check linked libraries and enable each mode accordingly
-		for lib in $(ldd "$bin" | awk '{print $1}'); do
+		for lib in $(ldd "$bin" 2>/dev/null | awk '{print $1}'); do
 			case "$lib" in
 				*libQt5Core.so*)
 					DEPLOY_QT=1
@@ -181,6 +189,20 @@ _determine_what_to_deploy() {
 }
 
 _make_deployment_array() {
+	if [ "$DEPLOY_PYTHON" = 1 ]; then
+		_echo "* Deploying python $PYTHON_VER"
+		if [ -n "$PYTHON_PACKAGES" ]; then
+			old_ifs="$IFS"
+			IFS=':'
+			set -- $PYTHON_PACKAGES
+			IFS="$old_ifs"
+			for pypkg do
+				_echo "* Deploying python package $pypkg"
+				echo "$pypkg" >> "$TMPDIR"/requirements.txt
+			done
+			set -- --python-pkg "$TMPDIR"/requirements.txt
+		fi
+	fi
 	# always deploy minimal amount of gconv
 	if [ -d "$LIB_DIR"/gconv ]; then
 		_echo "* Deploying minimal gconv"
@@ -253,7 +275,6 @@ _make_deployment_array() {
 
 	TO_DEPLOY_ARRAY=$(_save_array "$@")
 }
-
 
 _echo "------------------------------------------------------------"
 _echo "Starting deployment, checking if extra libraries need to be added..."
@@ -372,8 +393,10 @@ if [ "$DEPLOY_LOCALE" = 1 ]; then
 fi
 
 if [ -n "$ADD_HOOKS" ]; then
+	old_ifs="$IFS"
 	IFS=':'
 	set -- $ADD_HOOKS
+	IFS="$old_ifs"
 	hook_dst="$APPDIR"/bin
 	for hook do
 		if _download "$hook_dst"/"$hook" "$HOOKSRC"/"$hook"; then
