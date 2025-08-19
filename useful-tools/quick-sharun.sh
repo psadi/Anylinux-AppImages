@@ -549,6 +549,23 @@ for lib do case "$lib" in
 	esac
 done
 
+set -- "$APPDIR"/*.desktop
+if [ -f "$1" ] && ! grep -q 'StartupWMClass=' "$1"; then
+	_err_msg "WARNING: Missing StartupWMClass in desktop entry '$1'!"
+	_err_msg "We will fix it using the name of the binary but this"
+	_err_msg "may be wrong so please add the correct value if so"
+
+	bin="$(awk -F'=| ' '/^Exec=/{print $2; exit}' "$1")"
+	bin=${bin##*/}
+
+	if [ -n "$bin" ]; then
+		sed -i -e "/\[Desktop Entry\]/a\StartupWMClass=$bin" "$1"
+	else
+		_err_msg "ERROR: Unable to determine name of binary"
+		exit 1
+	fi
+fi
+
 echo ""
 _echo "------------------------------------------------------------"
 echo ""
