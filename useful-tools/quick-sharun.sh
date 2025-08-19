@@ -46,7 +46,7 @@ export VERBOSE=1
 
 if [ "$DEPLOY_PYTHON" = 1 ]; then
 	export WITH_PYTHON=1
-	export PYTHON_VER=${PYTHON_VER:-3.12}
+	export PYTHON_VER="${PYTHON_VER:-3.12}"
 fi
 
 if [ -z "$NO_STRIP" ]; then
@@ -54,7 +54,7 @@ if [ -z "$NO_STRIP" ]; then
 fi
 
 # github actions doesn't set USER
-export USER=${USER:-USER}
+export USER="${USER:-USER}"
 
 _echo() {
 	printf '\033[1;92m%s\033[0m\n' " $*"
@@ -135,6 +135,7 @@ _download() {
 }
 
 _determine_what_to_deploy() {
+	mkdir -p "$APPDIR"
 	for bin do
 		# ignore flags
 		case "$bin" in
@@ -280,17 +281,176 @@ _make_deployment_array() {
 	TO_DEPLOY_ARRAY=$(_save_array "$@")
 }
 
-_add_tmp_lib_dir_to_env() {
+_deploy_datadir() {
+	if [ "$DEPLOY_DATADIR" = 1 ]; then
+		for bin in "$APPDIR"/bin/*; do
+			[ -x "$bin" ] || continue
+			bin="${bin##*/}"
+			for datadir in /usr/local/share/* /usr/share/*; do
+				if echo "${datadir##*/}" | grep -qi "$bin"; then
+					mkdir -p "$APPDIR"/share
+					_echo "* Adding datadir $datadir..."
+					cp -vr "$datadir" "$APPDIR/share"
+					break
+				fi
+			done
+		done
+	fi
+}
+
+_deploy_locale() {
+	if [ "$DEPLOY_LOCALE" = 1 ]; then
+		mkdir -p "$APPDIR"/share
+		_echo "* Adding locales..."
+		cp -vr "$LOCALE_DIR" "$APPDIR"/share
+		if [ "$DEBLOAT_LOCALE" = 1 ]; then
+			_echo "* Removing unneeded locales..."
+			set -- \
+			! -name '*glib*' \
+			! -name '*gdk*'  \
+			! -name '*gtk*'  \
+			! -name '*tls*'  \
+			! -name '*p11*'  \
+			! -name '*v4l*'  \
+			! -name '*gettext*'
+			for f in "$APPDIR"/shared/bin/*; do
+				f=${f##*/}
+				set -- "$@" ! -name "*$f*"
+			done
+			find "$APPDIR"/share/locale "$@" -type f -delete
+		fi
+		echo ""
+	fi
+}
+
+_deploy_icon_and_desktop() {
+	if [ "$DESKTOP" = "DUMMY" ]; then
+		# use the first binary name in shared/bin as filename
+		set -- "$APPDIR"/shared/bin/*
+		[ -f "$1" ] || exit 1
+		f=${1##*/}
+		_echo "* Adding dummy $f desktop entry to $APPDIR..."
+		cat <<-EOF > "$APPDIR"/"$f".desktop
+		[Desktop Entry]
+		Name=$f
+		Exec=$f
+		Comment=Dummy made by quick-sharun
+		Type=Application
+		Hidden=true
+		Categories=Utility
+		Icon=$f
+		EOF
+	elif [ -f "$DESKTOP" ]; then
+		_echo "* Adding $DESKTOP to $APPDIR..."
+		cp -v "$DESKTOP" "$APPDIR"
+	elif [ -n "$DESKTOP" ]; then
+		_echo "* Downloading $DESKTOP to $APPDIR..."
+		_download "$APPDIR"/"${DESKTOP##*/}" "$DESKTOP"
+	fi
+
+	if [ "$ICON" = "DUMMY" ]; then
+		# use the first binary name in shared/bin as filename
+		set -- "$APPDIR"/shared/bin/*
+		[ -f "$1" ] || exit 1
+		f=${1##*/}
+		_echo "* Adding dummy $f icon to $APPDIR..."
+		:> "$APPDIR"/"$f".png
+		:> "$APPDIR"/.DirIcon
+	elif [ -f "$ICON" ]; then
+		_echo "* Adding $ICON to $APPDIR..."
+		cp -v "$ICON" "$APPDIR"
+	elif [ -n "$ICON" ]; then
+		_echo "* Downloading $ICON to $APPDIR..."
+		_download "$APPDIR"/"${ICON##*/}" "$ICON"
+	fi
+
+	# copy the entire hicolor icons dir and remove unneeded icons
+	mkdir -p "$APPDIR"/share/icons
+	cp -r /usr/share/icons/hicolor "$APPDIR"/share/icons
+
+	set --
+	for f in "$APPDIR"/shared/bin/*; do
+		f=${f##*/}
+		set -- ! -name "*$f*" "$@"
+	done
+
+	# also include names of top level .desktop and icon
+	if [ -n "$DESKTOP" ]; then
+		DESKTOP=${DESKTOP##*/}
+		DESKTOP=${DESKTOP%.desktop}
+		set -- ! -name "*$DESKTOP*" "$@"
+	fi
+
+	if [ -n "$ICON" ]; then
+		ICON=${ICON##*/}
+		ICON=${ICON%.png}
+		ICON=${ICON%.svg}
+		set -- ! -name "*$ICON*" "$@"
+	fi
+
+	find "$APPDIR"/share/icons/hicolor "$@" -type f -delete
+}
+
+_check_window_class() {
+	set -- "$APPDIR"/*.desktop
+
+	# do not bother if no desktop entry or class is declared already
+	if [ ! -f "$1" ] || grep -q 'StartupWMClass=' "$1"; then
+		return 0
+	fi
+
+	if [ -z "$STARTUPWMCLASS" ]; then
+		_err_msg "WARNING: '$1' is missing StartupWMClass!"
+		_err_msg "We will fix it using the name of the binary but this"
+		_err_msg "may be wrong so please add the correct value if so"
+		_err_msg "set STARTUPWMCLASS so I can set that instead"
+		bin="$(awk -F'=| ' '/^Exec=/{print $2; exit}' "$1")"
+		bin=${bin##*/}
+		if [ -z "$bin" ]; then
+			_err_msg "ERROR: Unable to determine name of binary"
+			exit 1
+		fi
+	fi
+
+	class=${STARTUPWMCLASS:-$bin}
+	sed -i -e "/\[Desktop Entry\]/a\StartupWMClass=$class" "$1"
+
+}
+
+_patch_away_usr_lib_dir() {
+	if ! grep -Eaoq -m 1 "/usr/lib" "$1"; then
+		return 1
+	fi
+
+	sed -i -e "s|/usr/lib|/tmp/$_tmp_lib|g" "$1"
+
 	if ! grep -q "_tmp_lib=$_tmp_lib" "$APPDIR"/.env 2>/dev/null; then
 		echo "_tmp_lib=$_tmp_lib" >> "$APPDIR"/.env
 	fi
+
+	_echo "* patched away /usr/lib from $1"
+	ADD_HOOKS="${ADD_HOOKS:+$ADD_HOOKS:}path-mapping-hardcoded.hook"
+}
+
+_patch_away_usr_share_dir() {
+	if ! grep -Eaoq -m 1 "/usr/share" "$1"; then
+		return 1
+	fi
+
+	sed -i -e "s|/usr/lib|/tmp/$_tmp_share|g" "$1"
+
+	if ! grep -q "_tmp_lib=$_tmp_share" "$APPDIR"/.env 2>/dev/null; then
+		echo "_tmp_lib=$_tmp_share" >> "$APPDIR"/.env
+	fi
+
+	_echo "* patched away /usr/share from $1"
+	ADD_HOOKS="${ADD_HOOKS:+$ADD_HOOKS:}path-mapping-hardcoded.hook"
 }
 
 _echo "------------------------------------------------------------"
 _echo "Starting deployment, checking if extra libraries need to be added..."
 echo ""
 
-mkdir -p "$APPDIR"
 _determine_what_to_deploy "$@"
 _make_deployment_array
 
@@ -400,114 +560,14 @@ elif [ "$PATH_MAPPING_HARDCODED" = 1 ]; then
 	echo ""
 fi
 
-if [ "$DEPLOY_DATADIR" = 1 ]; then
-	for bin in "$APPDIR"/bin/*; do
-		[ -x "$bin" ] || continue
-		bin="${bin##*/}"
-		for datadir in /usr/local/share/* /usr/share/*; do
-			if echo "$datadir" | grep -qi "$bin"; then
-				mkdir -p "$APPDIR"/share
-				_echo "* Adding datadir $datadir..."
-				cp -vr "$datadir" "$APPDIR/share"
-				echo ""
-				break
-			fi
-		done
-	done
-fi
-
-if [ "$DEPLOY_LOCALE" = 1 ]; then
-	mkdir -p "$APPDIR"/share
-	_echo "* Adding locales..."
-	cp -vr "$LOCALE_DIR" "$APPDIR"/share
-	if [ "$DEBLOAT_LOCALE" = 1 ]; then
-		_echo "* Removing unneeded locales..."
-		set -- \
-		    ! -name '*glib*' \
-		    ! -name '*gdk*'  \
-		    ! -name '*gtk*'  \
-		    ! -name '*tls*'  \
-		    ! -name '*p11*'  \
-		    ! -name '*v4l*'  \
-		    ! -name '*gettext*'
-		for f in "$APPDIR"/shared/bin/*; do
-			f=${f##*/}
-			set -- "$@" ! -name "*$f*"
-		done
-		find "$APPDIR"/share/locale "$@" -type f -delete
-	fi
-	echo ""
-fi
-
-if [ "$DESKTOP" = "DUMMY" ]; then
-	# use the first binary name in shared/bin as filename
-	set -- "$APPDIR"/shared/bin/*
-	[ -f "$1" ] || exit 1
-	f=${1##*/}
-	_echo "* Adding dummy $f desktop entry to $APPDIR..."
-	cat <<-EOF > "$APPDIR"/"$f".desktop
-	[Desktop Entry]
-	Name=$f
-	Exec=$f
-	Comment=Dummy made by quick-sharun
-	Type=Application
-	Hidden=true
-	Categories=Utility
-	Icon=$f
-	EOF
-elif [ -f "$DESKTOP" ]; then
-	_echo "* Adding $DESKTOP to $APPDIR..."
-	cp -v "$DESKTOP" "$APPDIR"
-elif [ -n "$DESKTOP" ]; then
-	_echo "* Downloading $DESKTOP to $APPDIR..."
-	_download "$APPDIR"/"${DESKTOP##*/}" "$DESKTOP"
-fi
-
-if [ "$ICON" = "DUMMY" ]; then
-	# use the first binary name in shared/bin as filename
-	set -- "$APPDIR"/shared/bin/*
-	[ -f "$1" ] || exit 1
-	f=${1##*/}
-	_echo "* Adding dummy $f icon to $APPDIR..."
-	:> "$APPDIR"/"$f".png
-	:> "$APPDIR"/.DirIcon
-elif [ -f "$ICON" ]; then
-	_echo "* Adding $ICON to $APPDIR..."
-	cp -v "$ICON" "$APPDIR"
-elif [ -n "$ICON" ]; then
-	_echo "* Downloading $ICON to $APPDIR..."
-	_download "$APPDIR"/"${ICON##*/}" "$ICON"
-fi
-
-# copy the entire hicolor icons dir and remove unneeded icons
-mkdir -p "$APPDIR"/share/icons
-cp -r /usr/share/icons/hicolor "$APPDIR"/share/icons
-
-set --
-for f in "$APPDIR"/shared/bin/*; do
-	f=${f##*/}
-	set -- ! -name "*$f*" "$@"
-done
-
-# also include names of top level .desktop and icon
-if [ -n "$DESKTOP" ]; then
-	DESKTOP=${DESKTOP##*/}
-	DESKTOP=${DESKTOP%.desktop}
-	set -- ! -name "*$DESKTOP*" "$@"
-fi
-
-if [ -n "$ICON" ]; then
-	ICON=${ICON##*/}
-	ICON=${ICON%.png}
-	ICON=${ICON%.svg}
-	set -- ! -name "*$ICON*" "$@"
-fi
-
-find "$APPDIR"/share/icons/hicolor "$@" -type f -delete
+_deploy_datadir
+_deploy_locale
+_deploy_icon_and_desktop
+_check_window_class
 
 echo ""
 _echo "------------------------------------------------------------"
-_echo "Finished deployment! Starting post deployment hooks"
+_echo "Finished deployment! Starting post deployment hooks..."
 _echo "------------------------------------------------------------"
 echo ""
 
@@ -518,15 +578,14 @@ set -- \
 	"$APPDIR"/lib/*/*/*/*.so*
 
 for lib do case "$lib" in
+	libgegl*)
+		# GEGL_PATH is problematic so we avoiud it
+		# patch the lib directly to load its plugins instead
+		_patch_away_usr_lib_dir "$lib" || continue
+		echo 'unset GEGL_PATH' >> "$APPDIR"/.env
+		;;
 	*libp11-kit.so*)
-		if ! grep -Eaoq -m 1 "/usr/lib" "$lib"; then
-			continue
-		fi
-		sed -i -e "s|/usr/lib|/tmp/$_tmp_lib|g" "$lib"
-
-		_echo "* patched away /usr/lib from $lib"
-		ADD_HOOKS="${ADD_HOOKS:+$ADD_HOOKS:}path-mapping-hardcoded.hook"
-		_add_tmp_lib_dir_to_env
+		_patch_away_usr_lib_dir "$lib" || continue
 		;;
 	*p11-kit-trust.so*)
 		# good path that library should have
@@ -546,26 +605,11 @@ for lib do case "$lib" in
 
 		_echo "* fixed path to /etc/ssl/certs in $lib"
 		;;
+	*libgimpwidgets*)
+		_patch_away_usr_share_dir "$lib" || continue
+		;;
 	esac
 done
-set -- "$APPDIR"/*.desktop
-if [ -f "$1" ] && ! grep -q 'StartupWMClass=' "$1"; then
-	if [ -z "$STARTUPWMCLASS" ]; then
-		_err_msg "WARNING: '$1' is missing StartupWMClass!"
-		_err_msg "We will fix it using the name of the binary but this"
-		_err_msg "may be wrong so please add the correct value if so"
-		_err_msg "set STARTUPWMCLASS so I can set that instead"
-		bin="$(awk -F'=| ' '/^Exec=/{print $2; exit}' "$1")"
-		bin=${bin##*/}
-		if [ -z "$bin" ]; then
-			_err_msg "ERROR: Unable to determine name of binary"
-			exit 1
-		fi
-	fi
-
-	class=${STARTUPWMCLASS:-$bin}
-	sed -i -e "/\[Desktop Entry\]/a\StartupWMClass=$class" "$1"
-fi
 
 echo ""
 _echo "------------------------------------------------------------"
@@ -582,7 +626,6 @@ if [ -n "$ADD_HOOKS" ]; then
 			continue
 		elif _download "$hook_dst"/"$hook" "$HOOKSRC"/"$hook"; then
 			_echo "* Added $hook"
-			echo ""
 		else
 			_err_msg "ERROR: Failed to download $hook, valid link?"
 			_err_msg "$HOOKSRC/$hook"
@@ -593,16 +636,36 @@ fi
 
 set -- "$APPDIR"/bin/*.hook
 if [ -f "$1" ] && [ ! -f "$APPDIR"/AppRun ]; then
-	_echo "* Adding $APPRUN..."
 	_download "$APPDIR"/AppRun "$HOOKSRC"/"$APPRUN"
+	_echo "* Added $APPRUN..."
 elif [ ! -f "$APPDIR"/AppRun ]; then
-	_echo "* Hardlinking $APPDIR/sharun as $APPDIR/AppRun..."
 	ln -v "$APPDIR"/sharun "$APPDIR"/AppRun
+	_echo "* Hardlinked $APPDIR/sharun as $APPDIR/AppRun..."
 fi
 
 chmod +x "$APPDIR"/AppRun "$APPDIR"/bin/*.hook 2>/dev/null || true
 
+# make sure the .env has all the "unset" last, due to a bug in the dotenv
+# library used by sharun all the unsets have to be declared last in the .env
+if [ -f "$APPDIR"/.env ]; then
+	sorted_env="$(LC_ALL=C awk '
+		{
+			if ($0 ~ /^unset/) {
+				unset_array[++u] = $0
+			} else {
+				print
+			}
+		}
+		END {
+			for (i = 1; i <= u; i++) {
+				print unset_array[i]
+			}
+		}' "$APPDIR"/.env
+	)"
+	echo "$sorted_env" > "$APPDIR"/.env
+fi
 
+echo ""
 _echo "------------------------------------------------------------"
 _echo "All done!"
 _echo "------------------------------------------------------------"
