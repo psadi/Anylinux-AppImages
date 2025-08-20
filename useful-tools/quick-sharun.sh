@@ -76,21 +76,63 @@ _err_msg(){
 	>&2 printf '\033[1;31m%s\033[0m\n' " $*"
 }
 
-if [ -z "$1" ] || [ "$1" = "--help" ]; then
-	 if [ -z "$PYTHON_PACKAGES" ]; then
-		_err_msg "USAGE: ${0##*/} /path/to/binaries_and_libraries"
-		_err_msg
-		_err_msg "You can also force bundling with vars, example:"
-		_err_msg "DEPLOY_OPENGL=1 ${0##*/} /path/to/bins"
-		_err_msg
-		exit 1
-	fi
+_help_msg() {
+	cat <<-EOF
+	USAGE: ${0##*/} /path/to/binaries_and_libraries
+
+	DESCRIPTION:
+	POSIX shell script wrapper for sharun that simplifies the deployment
+	of AppImages to simple oneliners. It automates detection and deployment of common
+	libraries such as GTK, Qt, OpenGL, Vulkan, Pipewire, GStreamer, etc.
+
+	Features:
+	- Automatic detection and forced deployment of libraries.
+	- Support for environment-based configuration to force deployment, e.g., DEPLOY_OPENGL=1
+	- Deployment of app-specific hooks, desktop entries, icons, locale data and more.
+	- Automatic patching of hardcoded paths in binaries and libraries.
+
+	OPTIONS / ENVIRONMENT VARIABLES:
+	ADD_HOOKS        List of hooks (colon-separated) to deploy with the application.
+	DESKTOP          Path or URL to a .desktop file to include.
+	ICON             Path or URL to an icon file to include.
+	DEPLOY_QT        Set to 1 to force deployment of Qt.
+	DEPLOY_GTK       Set to 1 to force deployment of GTK.
+	DEPLOY_OPENGL    Set to 1 to force deployment of OpenGL.
+	DEPLOY_VULKAN    Set to 1 to force deployment of Vulkan.
+	DEPLOY_PIPEWIRE  Set to 1 to force deployment of Pipewire.
+	DEPLOY_GSTREAMER Set to 1 to force deployment of GStreamer.
+	DEPLOY_LOCALE    Set to 1 to deploy locale data.
+	DEPLOY_PYTHON    Set to 1 to deploy Python.
+	                 Set PYTHON_VER and PYTHON_PACKAGES for version and packages to add.
+	LIB_DIR          Set source library directory if autodetection fails.
+	NO_STRIP         Disable stripping binaries and libraries if set.
+	APPDIR           Destination AppDir (default: ./AppDir).
+	APPRUN           AppRun to use (default: AppRun-generic). Only needed for hooks.
+
+	NOTE:
+	Several of these options get turned on automatically based on what is being deployed.
+
+	EXAMPLES:
+	DEPLOY_OPENGL=1 ./quick-sharun.sh /path/to/myapp
+	DESKTOP=/path/to/app.desktop ICON=/path/to/icon.png ./quick-sharun.sh /path/to/myapp
+	ADD_HOOKS="self-updater.bg.hook:fix-namespaces.hook" ./quick-sharun.sh /path/to/myapp
+
+	SEE ALSO:
+	sharun (https://github.com/VHSgunzo/sharun)
+	EOF
+}
+
+if [ -z "$1" ] && [ -z "$PYTHON_PACKAGES" ]; then
+	_help_msg
+	exit 1
+elif [ "$1" = "--help" ]; then
+	_help_msg
+	exit 0
 fi
 
 if [ -e "$1" ] && [ "$2" = "--" ]; then
 	STRACE_ARGS_PROVIDED=1
 fi
-
 
 if [ -z "$LIB_DIR" ]; then
 	if [ -d "/usr/lib/$ARCH-linux-gnu" ]; then
