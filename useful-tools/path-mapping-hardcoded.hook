@@ -3,12 +3,11 @@
 # this script makes symnlinks to the hardcoded random dirs that were
 # patched away when 'PATH_MAPPING_HARDCODED' is used with quick-sharun
 
-CURRENTDIR="$(cd "${0%/*}" && echo "$PWD")"
-
 # Use relative path to make sure we pick the `.env` from the same AppDir
-if [ -f "$CURRENTDIR"/../.env ]; then
-	. "$CURRENTDIR"/../.env
-	[ -n "$_tmp_bin" ]   && ln -sfn "$CURRENTDIR"/bin    /tmp/"$_tmp_bin"
-	[ -n "$_tmp_lib" ]   && ln -sfn "$CURRENTDIR"/lib    /tmp/"$_tmp_lib"
-	[ -n "$_tmp_share" ] && ln -sfn "$CURRENTDIR"/share  /tmp/"$_tmp_share"
+PARENTDIR="$(cd "${0%/*}" && echo "${PWD%/*}")"
+if [ -f "$PARENTDIR"/.env ]; then
+	. "$PARENTDIR"/.env
+	[ -n "$_tmp_bin" ]   && ln -sfn "$PARENTDIR"/bin    /tmp/"$_tmp_bin"
+	[ -n "$_tmp_lib" ]   && ln -sfn "$PARENTDIR"/lib    /tmp/"$_tmp_lib"
+	[ -n "$_tmp_share" ] && ln -sfn "$PARENTDIR"/share  /tmp/"$_tmp_share"
 fi
