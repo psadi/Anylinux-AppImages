@@ -492,7 +492,7 @@ _deploy_locale() {
 	for bin do
 		if grep -Eaoq -m 1 "/usr/share/locale" "$bin"; then
 			DEPLOY_LOCALE=1
-			_patch_away_usr_share_dir "$bin"
+			_patch_away_usr_share_dir "$bin" || true
 		fi
 	done
 
@@ -594,8 +594,8 @@ _deploy_icon_and_desktop() {
 	# make sure there is no hardcoded path to /usr/share/icons in bins
 	set -- "$APPDIR"/shared/bin/*
 	for bin do
-		if grep -Eaoq -m 1 "/usr/share" "$bin"; then
-			_patch_away_usr_share_dir "$bin"
+		if grep -Eaoq -m 1 "/usr/share/icons" "$bin"; then
+			_patch_away_usr_share_dir "$bin" || true
 		fi
 	done
 }
