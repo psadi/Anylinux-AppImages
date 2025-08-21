@@ -11,3 +11,4 @@ if [ -f "$PARENTDIR"/.env ]; then
 	[ -n "$_tmp_lib" ]   && ln -sfn "$PARENTDIR"/lib    /tmp/"$_tmp_lib"
 	[ -n "$_tmp_share" ] && ln -sfn "$PARENTDIR"/share  /tmp/"$_tmp_share"
 fi
+exit 0
