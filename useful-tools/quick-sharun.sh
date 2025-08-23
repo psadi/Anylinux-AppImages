@@ -505,7 +505,8 @@ _deploy_locale() {
 			set -- \
 			! -name '*glib*'       \
 			! -name '*gdk*'        \
-			! -name '*gtk*'        \
+			! -name '*gtk*30.mo'   \
+			! -name '*gtk*40.mo'   \
 			! -name '*p11*'        \
 			! -name '*gst-plugin*' \
 			! -name '*gstreamer*'
