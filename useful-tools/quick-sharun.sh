@@ -506,10 +506,7 @@ _deploy_locale() {
 			! -name '*glib*'       \
 			! -name '*gdk*'        \
 			! -name '*gtk*'        \
-			! -name '*tls*'        \
 			! -name '*p11*'        \
-			! -name '*v4l*'        \
-			! -name '*gettext*'    \
 			! -name '*gst-plugin*' \
 			! -name '*gstreamer*'
 			for f in "$APPDIR"/shared/bin/*; do
