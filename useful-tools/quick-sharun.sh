@@ -503,11 +503,8 @@ _deploy_locale() {
 		if [ "$DEBLOAT_LOCALE" = 1 ]; then
 			_echo "* Removing unneeded locales..."
 			set -- \
-			! -name '*glib*'       \
-			! -name '*gdk*'        \
 			! -name '*gtk*30.mo'   \
 			! -name '*gtk*40.mo'   \
-			! -name '*p11*'        \
 			! -name '*gst-plugin*' \
 			! -name '*gstreamer*'
 			for f in "$APPDIR"/shared/bin/*; do
