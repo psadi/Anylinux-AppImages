@@ -13,7 +13,7 @@ SOURCE=${SOURCE:-https://api.github.com/repos/pkgforge-dev/archlinux-pkgs-debloa
 
 COMMON_PACKAGES=${COMMON_PACKAGES:-0}
 PREFER_NANO=${PREFER_NANO:-0}
-ALL_MESA=${ALL_MESA:-0}
+ADD_MESA=${ADD_MESA:-0}
 ADD_OPENGL=${ADD_OPENGL:-0}
 ADD_VULKAN=${ADD_VULKAN:-0}
 
@@ -49,19 +49,19 @@ _help_msg() {
 
 	Options:
 	--help         Show this message and exit
-	--add-common   Install a curated set of common packages
-	            implies --add-opengl and --add-vulkan
+	--add-common   Install a curated set of common packages, implies --add-mesa
 	--add-opengl   Include Mesa OpenGL package
 	--add-vulkan   Include Mesa Vulkan drivers
 	            x86_64:  vulkan-{intel,radeon,nouveau}
 	            aarch64: vulkan-{freedreno,panfrost,broadcom,radeon,nouveau}
+	--add-mesa     Include all of mesa, implies --add-opengl and --add-vulkan
 	--prefer-nano  Prefer 'nano' variants of packages instead of 'mini'
 
 	Environment variables:
 	SOURCE           Change the source of the packages
 	COMMON_PACKAGES  Set to 1 to enable --add-common behavior
 	PREFER_NANO      Set to 1 to prefer 'nano' packages
-	ALL_MESA         Set to 1 to enable both --add-opengl and --add-vulkan
+	ADD_MESA         Set to 1 to enable --add-mesa behavior
 	ADD_OPENGL       Set to 1 to add OpenGL package
 	ADD_VULKAN       Set to 1 to add Vulkan packages
 
@@ -118,6 +118,10 @@ while true;
 			ADD_VULKAN=1
 			shift
 			;;
+		--add-mesa)
+			ADD_MESA=1
+			shift
+			;;
 		'')
 			break
 			;;
@@ -138,7 +142,7 @@ else
 fi
 
 if [ "$COMMON_PACKAGES" = 1 ]; then
-	ALL_MESA=1
+	ADD_MESA=1
 	set -- "$@" \
 		opus-mini        \
 		ffmpeg-mini      \
@@ -149,7 +153,7 @@ if [ "$COMMON_PACKAGES" = 1 ]; then
 		llvm-libs-"$PKG_TYPE"
 fi
 
-if [ "$ALL_MESA" = 1 ]; then
+if [ "$ADD_MESA" = 1 ]; then
 	ADD_OPENGL=1
 	ADD_VULKAN=1
 fi
