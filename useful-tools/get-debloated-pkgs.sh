@@ -178,11 +178,20 @@ if [ -z "$1" ]; then
 	_help_msg
 fi
 
-LIST=$($DLCMDS - "$SOURCE" | sed 's/[()",{} ]/\n/g' | grep -o "https.*.$SUFFIX")
+LIST_ALL=$($DLCMDS - "$SOURCE" \
+	| sed 's/[()",{} ]/\n/g' | grep -o 'https.*pkg\.tar\.\(zst\|xz\)')
+
+LIST_ARCH=$(echo "$LIST_ALL" | grep "$SUFFIX")
 
 for pkg do
-	if ! echo "$LIST" | grep -m 1 "$pkg" >> "$TMPFILE"; then
-		_error "Could not find package: $pkg"
+	if ! echo "$LIST_ARCH" | grep -m 1 "$pkg" >> "$TMPFILE"; then
+		# maybe this package is only available for a certain arch
+		# in that case check before quitting with error
+		if echo "$LIST_ALL" | grep -m 1 "$pkg"; then
+			_echo2 "* Skipped '$pkg' not available for $ARCH"
+		else
+			_error "Could not find package: $pkg"
+		fi
 	fi
 done
 
