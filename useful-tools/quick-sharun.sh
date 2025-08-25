@@ -23,6 +23,8 @@ LD_PRELOAD_OPEN=${LD_PRELOAD_OPEN:-https://github.com/fritzw/ld-preload-open.git
 
 EXEC_WRAPPER=${EXEC_WRAPPER:-0}
 EXEC_WRAPPER_SOURCE=${EXEC_WRAPPER_SOURCE:-https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/heads/main/useful-tools/exec.c}
+LOCALE_FIX=${LOCALE_FIX:-0}
+LOCALE_FIX_SOURCE=${LOCALE_FIX_SOURCE:-https://raw.githubusercontent.com/pkgforge-dev/Anylinux-AppImages/refs/heads/main/useful-tools/localefix.c}
 
 DEPLOY_QT=${DEPLOY_QT:-0}
 DEPLOY_GTK=${DEPLOY_GTK:-0}
@@ -442,6 +444,23 @@ _add_exec_wrapper() {
 	_echo "* EXEC_WRAPPER successfully added!"
 }
 
+_add_locale_fix() {
+	if [ "$LOCALE_FIX" != 1 ]; then
+		return 0
+	fi
+
+	if ! command -v cc 1>/dev/null; then
+		_err_msg "ERROR: Using LOCALE_FIX requires cc"
+		exit 1
+	fi
+
+	_echo "* Building localefix.so..."
+	_download "$TMPDIR"/localefix.c "$LOCALE_FIX_SOURCE"
+	cc -shared -fPIC "$TMPDIR"/localefix.c -o "$APPDIR"/lib/localefix.so
+	echo "localefix.so" >> "$APPDIR"/.preload
+
+	_echo "* LOCALE_FIX successfully added!"
+}
 
 _map_paths_ld_preload_open() {
 	case "$PATH_MAPPING" in
@@ -727,6 +746,7 @@ _echo "------------------------------------------------------------"
 echo ""
 
 _add_exec_wrapper
+_add_locale_fix
 _map_paths_ld_preload_open
 _map_paths_binary_patch
 _deploy_datadir
