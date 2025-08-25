@@ -143,6 +143,26 @@ if [ -n "$UPINFO" ]; then
 	"$RUNTIME" --appimage-addupdinfo "$UPINFO"
 fi
 
+# make sure the .env has all the "unset" last, due to a bug in the dotenv
+# library used by sharun all the unsets have to be declared last in the .env
+if [ -f "$APPDIR"/.env ]; then
+	sorted_env="$(LC_ALL=C awk '
+		{
+			if ($0 ~ /^unset/) {
+				unset_array[++u] = $0
+			} else {
+				print
+			}
+		}
+		END {
+			for (i = 1; i <= u; i++) {
+				print unset_array[i]
+			}
+		}' "$APPDIR"/.env
+	)"
+	echo "$sorted_env" > "$APPDIR"/.env
+fi
+
 _echo "------------------------------------------------------------"
 _echo "Making AppImage..."
 _echo "------------------------------------------------------------"
