@@ -18,6 +18,8 @@ DWARFS_LINK=${DWARFS_LINK:-https://github.com/mhx/dwarfs/releases/download/v0.12
 TMPDIR=${TMPDIR:-/tmp}
 DWARFS_CMD="${DWARFS_CMD:-$TMPDIR/mkdwarfs}"
 RUNTIME="${RUNTIME:-$TMPDIR/uruntime}"
+DWARFSPROF="${DWARFSPROF:-$APPDIR/.dwarfsprofile}"
+OPTIMIZE_LAUNCH="${OPTIMIZE_LAUNCH:-0}"
 
 _echo() {
 	printf '\033[1;92m%s\033[0m\n' "$*"
@@ -55,7 +57,7 @@ _try_to_find_icon() {
 	fi
 }
 
-if [ ! -d "$APPDIR" ]; then 
+if [ ! -d "$APPDIR" ]; then
 	>&2 echo "ERROR: No $APPDIR directory found"
 	>&2 echo "Set APPDIR if you have it at another location"
 	exit 1
@@ -167,16 +169,44 @@ _echo "------------------------------------------------------------"
 _echo "Making AppImage..."
 _echo "------------------------------------------------------------"
 
-"$DWARFS_CMD" \
+set -- \
 	--force               \
 	--set-owner 0         \
 	--set-group 0         \
 	--no-history          \
 	--no-create-timestamp \
-	-C $DWARFS_COMP       \
 	--header "$RUNTIME"   \
-	--input  "$APPDIR"    \
-	--output "$OUTPATH"/"$OUTNAME"
+	--input  "$APPDIR"
+
+if [ "$OPTIMIZE_LAUNCH" = 1 ]; then
+	tmpappimage="$TMPDIR"/.analyze
+	deps="xvfb-run pkill"
+	for d in $deps; do
+		if ! command -v "$d" 1>/dev/null; then
+			>&2 echo "ERROR: Using OPTIMIZE_LAUNCH requires $d"
+			exit 1
+		fi
+	done
+
+	_echo "* Making dwarfs profile optimization at "$DWARFSPROF"..."
+	"$DWARFS_CMD" "$@" -C zstd:level=5 -S19 --output "$tmpappimage"
+	chmod +x "$tmpappimage"
+
+	( DWARFS_ANALYSIS_FILE="$DWARFSPROF" xvfb-run -a -- "$tmpappimage" ) &
+	pid=$!
+
+	sleep 10
+	pkill -P "$pid" || true
+	rm -f "$tmpappimage"
+fi
+
+
+if [ -f "$DWARFSPROF" ]; then
+	_echo "* Using $DWARFSPROF..."
+	set -- --categorize=hotness --hotness-list="$DWARFSPROF" "$@"
+fi
+
+"$DWARFS_CMD" "$@" -C $DWARFS_COMP --output "$OUTPATH"/"$OUTNAME"
 
 if [ -n "$UPINFO" ]; then
 	_echo "------------------------------------------------------------"
@@ -190,6 +220,8 @@ if [ -n "$UPINFO" ]; then
 	fi
 fi
 
+chmod +x "$OUTPATH"/"$OUTNAME"
+
 _echo "------------------------------------------------------------"
-_echo "All done! AppImage at:$OUTPATH/$OUTNAME"
+_echo "All done! AppImage at: $OUTPATH/$OUTNAME"
 _echo "------------------------------------------------------------"
