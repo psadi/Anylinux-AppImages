@@ -3,6 +3,11 @@
  * Unsets known variables that cause issues rather than restoring to parent enviroment
  * One issue with restoring to the parent enviroment is that it unset variables set by
  * terminal emulators like TERM which need to be preserved in the child shell
+ *
+ * This library also fixes a common issue when appimage portable home, config, etc
+ * mode is used, where for example the HOME var from the portable .home dir would
+ * be inherited by other processes launched by the appimage in portable mode
+ * causing them to start using the fake .home dir instead of the real home
 */
 
 #ifndef _GNU_SOURCE
