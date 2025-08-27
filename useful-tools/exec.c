@@ -15,7 +15,6 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <pwd.h>
 #include <fcntl.h>
 
 typedef int (*execve_func_t)(const char *filename, char *const argv[], char *const envp[]);
@@ -49,24 +48,24 @@ static int env_initialized = 0;
 static char* read_parent_env(const char* var_name) {
     pid_t ppid = getppid();
     if (ppid <= 1) return NULL;
-    
+
     char proc_path[256];
     snprintf(proc_path, sizeof(proc_path), "/proc/%d/environ", ppid);
-    
+
     int fd = open(proc_path, O_RDONLY);
     if (fd < 0) return NULL;
-    
+
     char buffer[8192];
     ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
     close(fd);
-    
+
     if (bytes_read <= 0) return NULL;
     buffer[bytes_read] = '\0';
-    
+
     size_t var_len = strlen(var_name);
     char *pos = buffer;
     char *end = buffer + bytes_read;
-    
+
     while (pos < end) {
         if (strncmp(pos, var_name, var_len) == 0 && pos[var_len] == '=') {
             char *value_start = pos + var_len + 1;
@@ -87,16 +86,7 @@ static char* read_parent_env(const char* var_name) {
         while (pos < end && *pos != '\0') pos++;
         pos++; // Skip the null terminator
     }
-    
-    return NULL;
-}
 
-// Get the real home directory from passwd
-static char* get_real_home_from_passwd() {
-    struct passwd *pw = getpwuid(getuid());
-    if (pw && pw->pw_dir) {
-        return strdup(pw->pw_dir);
-    }
     return NULL;
 }
 
@@ -104,14 +94,14 @@ static char* get_real_home_from_passwd() {
 static int is_portable_home_in_use() {
     const char *current_home = getenv("HOME");
     if (!current_home) return 0;
-    
+
     // Check if HOME contains .home suffix (portable home pattern)
     // This indicates HOME = $APPIMAGE.home where APPIMAGE is the full path to AppImage file
     size_t home_len = strlen(current_home);
     if (home_len > 5 && strcmp(current_home + home_len - 5, ".home") == 0) {
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -119,19 +109,19 @@ static int is_portable_home_in_use() {
 static int is_portable_xdg_config() {
     const char *xdg_config = getenv("XDG_CONFIG_HOME");
     const char *appimage = getenv("APPIMAGE");
-    
+
     if (!xdg_config || !appimage) return 0;
-    
+
     // Build expected portable config path: $APPIMAGE.config
     size_t appimage_len = strlen(appimage);
     size_t expected_len = appimage_len + 7; // ".config"
     char *expected_path = malloc(expected_len + 1);
     if (!expected_path) return 0;
-    
+
     snprintf(expected_path, expected_len + 1, "%s.config", appimage);
     int is_portable = (strcmp(xdg_config, expected_path) == 0);
     free(expected_path);
-    
+
     return is_portable;
 }
 
@@ -139,19 +129,19 @@ static int is_portable_xdg_config() {
 static int is_portable_xdg_data() {
     const char *xdg_data = getenv("XDG_DATA_HOME");
     const char *appimage = getenv("APPIMAGE");
-    
+
     if (!xdg_data || !appimage) return 0;
-    
+
     // Build expected portable data path: $APPIMAGE.share
     size_t appimage_len = strlen(appimage);
     size_t expected_len = appimage_len + 6; // ".share"
     char *expected_path = malloc(expected_len + 1);
     if (!expected_path) return 0;
-    
+
     snprintf(expected_path, expected_len + 1, "%s.share", appimage);
     int is_portable = (strcmp(xdg_data, expected_path) == 0);
     free(expected_path);
-    
+
     return is_portable;
 }
 
@@ -161,43 +151,38 @@ static int is_portable_appimage_in_use() {
     if (is_portable_home_in_use()) {
         return 1;
     }
-    
+
     // Check XDG_CONFIG_HOME for portable pattern ($APPIMAGE.config)
     if (is_portable_xdg_config()) {
         return 1;
     }
-    
+
     // Check XDG_DATA_HOME for portable pattern ($APPIMAGE.share)
     if (is_portable_xdg_data()) {
         return 1;
     }
-    
+
     return 0;
 }
 
 // Get original environment values using three-tiered approach
 static void get_original_env_values() {
     if (env_initialized) return;
-    
+
     // First tier: try to read from parent process
     original_home = read_parent_env("HOME");
     original_xdg_config_home = read_parent_env("XDG_CONFIG_HOME");
     original_xdg_data_home = read_parent_env("XDG_DATA_HOME");
-    
+
     // Track whether parent actually had these variables set
     parent_had_xdg_config_home = (original_xdg_config_home != NULL);
     parent_had_xdg_data_home = (original_xdg_data_home != NULL);
-    
-    // Second tier: if HOME not found from parent, try passwd
-    if (!original_home) {
-        original_home = get_real_home_from_passwd();
-    }
-    
+
     // Note: We do NOT calculate XDG defaults if parent didn't have them set
     // Applications will use ~/.config and ~/.local/share defaults when these are unset
-    
+
     env_initialized = 1;
-    
+
     DEBUG_PRINT("Original environment values: HOME=%s, XDG_CONFIG_HOME=%s (parent_had=%d), XDG_DATA_HOME=%s (parent_had=%d)\n",
                 original_home ? original_home : "(null)",
                 original_xdg_config_home ? original_xdg_config_home : "(null)", parent_had_xdg_config_home,
@@ -259,7 +244,7 @@ static char* const* create_cleaned_env(char* const* original_env)
     if (!appdir) {
         return original_env;
     }
-    
+
     // Initialize environment values if not already done and we have APPDIR
     if (!env_initialized) {
         get_original_env_values();
@@ -273,10 +258,10 @@ static char* const* create_cleaned_env(char* const* original_env)
     // Reserve extra space for potential HOME, XDG_CONFIG_HOME, XDG_DATA_HOME additions
     char** new_env = calloc(env_count + 4, sizeof(char*));
     size_t new_env_index = 0;
-    
+
     // Track if we've seen and need to replace HOME, XDG_CONFIG_HOME, XDG_DATA_HOME
     int found_home = 0, found_xdg_config = 0, found_xdg_data = 0;
-    
+
     // Only restore portable home paths if we have captured original values and portable AppImage is in use
     int should_restore_home = (env_initialized && is_portable_appimage_in_use());
 
@@ -301,7 +286,7 @@ static char* const* create_cleaned_env(char* const* original_env)
             } else if (strncmp(original_env[i], "XDG_CONFIG_HOME=", 16) == 0) {
                 // Check if this is a portable config dir ($APPIMAGE.config)
                 int is_portable_config = is_portable_xdg_config();
-                
+
                 if (parent_had_xdg_config_home && original_xdg_config_home) {
                     // Parent had it set, restore to original value
                     size_t new_len = strlen("XDG_CONFIG_HOME=") + strlen(original_xdg_config_home) + 1;
@@ -323,7 +308,7 @@ static char* const* create_cleaned_env(char* const* original_env)
             } else if (strncmp(original_env[i], "XDG_DATA_HOME=", 14) == 0) {
                 // Check if this is a portable data dir ($APPIMAGE.share)
                 int is_portable_data = is_portable_xdg_data();
-                
+
                 if (parent_had_xdg_data_home && original_xdg_data_home) {
                     // Parent had it set, restore to original value
                     size_t new_len = strlen("XDG_DATA_HOME=") + strlen(original_xdg_data_home) + 1;
@@ -372,7 +357,7 @@ static char* const* create_cleaned_env(char* const* original_env)
             new_env_index++;
         }
     }
-    
+
     // Add missing HOME, XDG_CONFIG_HOME, XDG_DATA_HOME if they weren't in the original env
     // but only if parent actually had them set (for XDG variables)
     if (should_restore_home) {
@@ -405,7 +390,7 @@ static char* const* create_cleaned_env(char* const* original_env)
             }
         }
     }
-    
+
     new_env[new_env_index] = NULL;
 
     return new_env;
