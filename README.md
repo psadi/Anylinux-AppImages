@@ -55,7 +55,8 @@ We also try to avoid the usage of containers and other methods; so far, the only
 | 37  | [Torzu](https://github.com/pkgforge-dev/Torzu-AppImage)                                                                  |
 | 38  | [transmission-qt](https://github.com/pkgforge-dev/transmission-qt-AppImage)                                              |
 | 39  | [UnleashedRecomp](https://github.com/pkgforge-dev/UnleashedRecomp-AppImage)                                              |
-| 40  | [Zenity](https://github.com/pkgforge-dev/Zenity-GTK3-AppImage)                                                           |
+| 40  | [xenia-canary](https://github.com/pkgforge-dev/xenia-canary-AppImage)                                                    |
+| 41  | [Zenity](https://github.com/pkgforge-dev/Zenity-GTK3-AppImage)                                                           |
 
 ---
 
