@@ -53,7 +53,7 @@ _help_msg() {
 	--add-opengl   Include Mesa OpenGL package
 	--add-vulkan   Include Mesa Vulkan drivers
 	            x86_64:  vulkan-{intel,radeon,nouveau}
-	            aarch64: vulkan-{freedreno,panfrost,broadcom,radeon,nouveau}
+	            aarch64: vulkan-{freedreno,panfrost,broadcom,asahi,radeon,nouveau}
 	--add-mesa     Include all of mesa, implies --add-opengl and --add-vulkan
 	--prefer-nano  Prefer 'nano' variants of packages instead of 'mini'
 
@@ -169,7 +169,8 @@ if [ "$ADD_VULKAN" = 1 ]; then
 		set -- "$@" \
 			vulkan-panfrost-"$PKG_TYPE"  \
 			vulkan-freedreno-"$PKG_TYPE" \
-			vulkan-broadcom-"$PKG_TYPE"
+			vulkan-broadcom-"$PKG_TYPE"  \
+			vulkan-asahi-"$PKG_TYPE"
 	fi
 	set -- "$@" \
 		vulkan-radeon-"$PKG_TYPE" \
