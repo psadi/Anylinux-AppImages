@@ -82,11 +82,11 @@ _help_msg() {
 if ! command -v pacman 1>/dev/null; then
 	_error "${0##*/} can only be used on Archlinux like systems!"
 elif command -v wget 1>/dev/null; then
-	DLCMD="wget -O"
-	DLCMDS="wget -qO"
+	DLCMD="wget --retry-connrefused --tries=30 -O"
+	DLCMDS="wget --retry-connrefused --tries=30 -qO"
 elif command -v curl 1>/dev/null; then
-	DLCMD="curl -Lo"
-	DLCMDS="curl -Lso"
+	DLCMD="curl --retry-connrefused --retry 30 -Lo"
+	DLCMDS="curl --retry-connrefused --retry 30 -Lso"
 else
 	_error "We need wget or curl to download packages"
 fi
@@ -183,8 +183,10 @@ if [ -z "$1" ]; then
 	_help_msg
 fi
 
-LIST_ALL=$($DLCMDS - "$SOURCE" \
-	| sed 's/[()",{} ]/\n/g' | grep -o 'https.*pkg\.tar\.\(zst\|xz\)')
+if ! LIST_ALL=$($DLCMDS - "$SOURCE" \
+	| sed 's/[()",{} ]/\n/g' | grep -o 'https.*pkg\.tar\.\(zst\|xz\)'); then
+	_error "Failed to download packages list!"
+fi
 
 LIST_ARCH=$(echo "$LIST_ALL" | grep "$SUFFIX")
 
@@ -236,4 +238,3 @@ fi
 _echo "------------------------------------------------------------"
 _echo "                         ALL DONE!                          "
 _echo "------------------------------------------------------------"
-
