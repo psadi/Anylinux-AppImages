@@ -25,6 +25,10 @@ _echo() {
 	printf '\033[1;92m%s\033[0m\n' "$*"
 }
 
+_err_msg(){
+	>&2 printf '\033[1;31m%s\033[0m\n' " $*"
+}
+
 _download() {
 	if command -v wget 1>/dev/null; then
 		DOWNLOAD_CMD="wget -qO"
@@ -85,6 +89,31 @@ _deploy_desktop_and_icon() {
 	fi
 }
 
+_check_window_class() {
+	set -- "$APPDIR"/*.desktop
+
+	# do not bother if class is declared already
+	if grep -q 'StartupWMClass=' "$1"; then
+		return 0
+	fi
+
+	if [ -z "$STARTUPWMCLASS" ]; then
+		_err_msg "WARNING: '$1' is missing StartupWMClass!"
+		_err_msg "We will fix it using the name of the binary but this"
+		_err_msg "may be wrong so please add the correct value if so"
+		_err_msg "set STARTUPWMCLASS so I can use that vallue instead"
+		bin="$(awk -F'=| ' '/^Exec=/{print $2; exit}' "$1")"
+		bin=${bin##*/}
+		if [ -z "$bin" ]; then
+			_err_msg "ERROR: Unable to determine name of binary"
+			exit 1
+		fi
+	fi
+
+	class=${STARTUPWMCLASS:-$bin}
+	sed -i -e "/\[Desktop Entry\]/a\StartupWMClass=$class" "$1"
+}
+
 _try_to_find_icon() {
 	>&2 echo "No $APPDIR/.DirIcon found, trying to find it in $APPDIR"
 
@@ -130,6 +159,8 @@ elif [ ! -x "$APPDIR"/AppRun ]; then
 	>&2 echo "WARNING: Fixing exec perms of $APPDIR/AppRun"
 	chmod +x "$APPDIR"/AppRun
 fi
+
+_check_window_class
 
 if [ -z "$OUTNAME" ]; then
 	if [ -z "$APPNAME" ]; then
