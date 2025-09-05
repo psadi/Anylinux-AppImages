@@ -165,6 +165,50 @@ if [ -f "$APPDIR"/.env ]; then
 	echo "$sorted_env" > "$APPDIR"/.env
 fi
 
+if [ ! -f "$APPDIR"/*.desktop ]; then
+	if [ "$DESKTOP" = "DUMMY" ]; then
+		# use the first binary name in shared/bin as filename
+		set -- "$APPDIR"/shared/bin/*
+		[ -f "$1" ] || exit 1
+		f=${1##*/}
+		_echo "* Adding dummy $f desktop entry to $APPDIR..."
+		cat <<-EOF > "$APPDIR"/"$f".desktop
+		[Desktop Entry]
+		Name=$f
+		Exec=$f
+		Comment=Dummy made by quick-sharun
+		Type=Application
+		Hidden=true
+		Categories=Utility
+		Icon=$f
+		EOF
+	elif [ -f "$DESKTOP" ]; then
+		_echo "* Adding $DESKTOP to $APPDIR..."
+		cp -v "$DESKTOP" "$APPDIR"
+	elif [ -n "$DESKTOP" ]; then
+		_echo "* Downloading $DESKTOP to $APPDIR..."
+		_download "$APPDIR"/"${DESKTOP##*/}" "$DESKTOP"
+	fi
+fi
+
+if [ ! -f "$APPDIR"/.DirIcon ]; then
+	if [ "$ICON" = "DUMMY" ]; then
+		# use the first binary name in shared/bin as filename
+		set -- "$APPDIR"/shared/bin/*
+		[ -f "$1" ] || exit 1
+		f=${1##*/}
+		_echo "* Adding dummy $f icon to $APPDIR..."
+		:> "$APPDIR"/"$f".png
+		:> "$APPDIR"/.DirIcon
+	elif [ -f "$ICON" ]; then
+		_echo "* Adding $ICON to $APPDIR..."
+		cp -v "$ICON" "$APPDIR"
+	elif [ -n "$ICON" ]; then
+		_echo "* Downloading $ICON to $APPDIR..."
+		_download "$APPDIR"/"${ICON##*/}" "$ICON"
+	fi
+fi
+
 _echo "------------------------------------------------------------"
 _echo "Making AppImage..."
 _echo "------------------------------------------------------------"
