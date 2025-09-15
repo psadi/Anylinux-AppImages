@@ -45,7 +45,7 @@ We also try to avoid the usage of containers and other methods; so far, the only
 | 27  | [NSZ](https://github.com/pkgforge-dev/NSZ-AppImage)                                                                      |
 | 28  | [OBS Studio](https://github.com/pkgforge-dev/OBS-Studio-AppImage)                                                        |
 | 29  | [pavucontrol-qt](https://github.com/pkgforge-dev/pavucontrol-qt-AppImage)                                                |
-| 30  | [Pixelpulse3](https://github.com/pkgforge-dev/Pixelpulse3-AppImage)                                                      |
+| 30  | [Pixelpulse2](https://github.com/pkgforge-dev/Pixelpulse2-AppImage)                                                      |
 | 31  | [playerctl](https://github.com/pkgforge-dev/playerctl-AppImage)                                                          |
 | 32  | [polybar](https://github.com/pkgforge-dev/polybar-AppImage)                                                              |
 | 33  | ~[PPSSPP](https://github.com/pkgforge-dev/PPSSPP-AppImage)~ - [Upstreamed](https://github.com/hrydgard/ppsspp/releases). |
