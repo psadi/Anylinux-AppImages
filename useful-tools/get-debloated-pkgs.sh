@@ -90,7 +90,11 @@ _download() {
 			break
 		fi
 		COUNT=$(( COUNT + 1 ))
-		if [ "$COUNT" -gt 5 ]; then
+		if [ "$COUNT" -eq 4 ] && grep -q 'ERROR 403' "$ERRLOG"; then
+			_echo2 "WARNING: Rate limit exceeded!"
+			_echo2 "Waiting 5 minutes before retrying..."
+			sleep 300
+		elif [ "$COUNT" -gt 5 ]; then
 			_error "Failed 5 times to download $*"
 		fi
 	done
