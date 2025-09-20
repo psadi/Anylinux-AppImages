@@ -14,54 +14,95 @@ We also try to avoid the usage of containers and other methods; so far, the only
 
 ---
 
-| Applications                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------------------ |
-[alacritty](https://github.com/pkgforge-dev/alacritty-AppImage)                                                          |
-[Android Tools](https://github.com/pkgforge-dev/android-tools-AppImage)                                                  |
-[AppImageUpdate](https://github.com/pkgforge-dev/AppImageUpdate-Enhanced-Edition)                                        |
-[ares-emu](https://github.com/pkgforge-dev/ares-emu-appimage)                                                            |
-[Azahar](https://github.com/pkgforge-dev/Azahar-AppImage-Enhanced)                                                       |
-[Citron](https://github.com/pkgforge-dev/Citron-AppImage)                                                                |
-[Clementine](https://github.com/pkgforge-dev/Clementine-AppImage)                                                        |
-[Cromite](https://github.com/pkgforge-dev/Cromite-AppImage)                                                              |
-[Dolphin-emu](https://github.com/pkgforge-dev/Dolphin-emu-AppImage)                                                      |
-[DeaDBeeF](https://github.com/pkgforge-dev/DeaDBeeF-AppImage)                                                            |
-[DeSmuME](https://github.com/pkgforge-dev/DeSmuME-AppImage)                                                              |
-[dunst](https://github.com/pkgforge-dev/dunst-AppImage)                                                                  |
-[EasyTAG](https://github.com/pkgforge-dev/EasyTAG-AppImage)                                                              |
-[Ghostty](https://github.com/pkgforge-dev/ghostty-appimage)                                                              |
-[GIMP-and-PhotoGIMP](https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage)                                        |
-[Gnome Calculator](https://github.com/pkgforge-dev/Gnome-Calculator-AppImage)                                            |
-[Gnome Pomodoro](https://github.com/pkgforge-dev/gnome-pomodoro-appimage)                                                |
-[Gnome Text Editor](https://github.com/pkgforge-dev/Gnome-Text-Editor-AppImage)                                          |
-[gpu-screen-recorder](https://github.com/pkgforge-dev/gpu-screen-recorder-AppImage)                                      |
-[htop](https://github.com/pkgforge-dev/htop-AppImage)                                                                    |
-[kdeconnect](https://github.com/pkgforge-dev/kdeconnect-AppImage)                                                        |
-[Ladybird](https://github.com/pkgforge-dev/ladybird-appimage)                                                            |
-[Lutris](https://github.com/pkgforge-dev/Lutris-AppImage)                                                                |
-[MAME](https://github.com/pkgforge-dev/MAME-AppImage)                                                                    |
-[Mednafen](https://github.com/pkgforge-dev/mednafen-appimage)                                                            |
-[mpv](https://github.com/pkgforge-dev/mpv-AppImage)                                                                      |
-[NSZ](https://github.com/pkgforge-dev/NSZ-AppImage)                                                                      |
-[OBS Studio](https://github.com/pkgforge-dev/OBS-Studio-AppImage)                                                        |
-[pavucontrol-qt](https://github.com/pkgforge-dev/pavucontrol-qt-AppImage)                                                |
-[Pixelpulse2](https://github.com/pkgforge-dev/Pixelpulse2-AppImage)                                                      |
-[playerctl](https://github.com/pkgforge-dev/playerctl-AppImage)                                                          |
-[polybar](https://github.com/pkgforge-dev/polybar-AppImage)                                                              |
-~[PPSSPP](https://github.com/pkgforge-dev/PPSSPP-AppImage)~ - [Upstreamed](https://github.com/hrydgard/ppsspp/releases). |
-[puddletag](https://github.com/pkgforge-dev/puddletag-AppImage)                                                          |
-[Rnote](https://github.com/pkgforge-dev/Rnote-AppImage)                                                                  |
-[rofi](https://github.com/pkgforge-dev/rofi-AppImage)                                                                    |
-[scrcpy](https://github.com/pkgforge-dev/scrcpy-AppImage)                                                                |
-[SpeedCrunch](https://github.com/pkgforge-dev/SpeedCrunch-AppImage)                                                      |
-[st](https://github.com/pkgforge-dev/st-AppImage)                                                                        |
-[strawberry](https://github.com/pkgforge-dev/strawberry-AppImage)                                                        |
-[Sudachi](https://github.com/pkgforge-dev/Sudachi-AppImage)                                                              |
-[Torzu](https://github.com/pkgforge-dev/Torzu-AppImage)                                                                  |
-[transmission-qt](https://github.com/pkgforge-dev/transmission-qt-AppImage)                                              |
-[UnleashedRecomp](https://github.com/pkgforge-dev/UnleashedRecomp-AppImage)                                              |
-[xenia-canary](https://github.com/pkgforge-dev/xenia-canary-AppImage)                                                    |
-[Zenity](https://github.com/pkgforge-dev/Zenity-GTK3-AppImage)                                                           |
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Application List</title>
+  <style>
+    /* Use a CSS counter to generate the serial numbers automatically */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+    tbody {
+      counter-reset: row-num;               /* start the counter */
+    }
+    tbody tr {
+      counter-increment: row-num;           /* increment for each row */
+    }
+    tbody tr td:first-child::before {
+      content: counter(row-num);            /* display the counter */
+    }
+  </style>
+</head>
+<body>
+
+<table>
+  <thead>
+    <tr>
+      <th>S.No</th>
+      <th>Application</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/alacritty-AppImage">alacritty</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/android-tools-AppImage">Android Tools</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/AppImageUpdate-Enhanced-Edition">AppImageUpdate</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/ares-emu-appimage">ares-emu</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Azahar-AppImage-Enhanced">Azahar</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Citron-AppImage">Citron</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Clementine-AppImage">Clementine</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Cromite-AppImage">Cromite</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/DeaDBeeF-AppImage">DeaDBeeF</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/DeSmuME-AppImage">DeSmuME</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Dolphin-emu-AppImage">Dolphin-emu</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/dunst-AppImage">dunst</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/EasyTAG-AppImage">EasyTAG</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/ghostty-appimage">Ghostty</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/GIMP-and-PhotoGIMP-AppImage">GIMP‑and‑PhotoGIMP</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Gnome-Calculator-AppImage">Gnome Calculator</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/gnome-pomodoro-appimage">Gnome Pomodoro</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Gnome-Text-Editor-AppImage">Gnome Text Editor</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/gpu-screen-recorder-AppImage">gpu-screen-recorder</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/htop-AppImage">htop</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/kdeconnect-AppImage">kdeconnect</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/ladybird-appimage">Ladybird</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Lutris-AppImage">Lutris</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/MAME-AppImage">MAME</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/mednafen-appimage">Mednafen</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/mpv-AppImage">mpv</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/NSZ-AppImage">NSZ</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/OBS-Studio-AppImage">OBS Studio</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/pavucontrol-qt-AppImage">pavucontrol-qt</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Pixelpulse2-AppImage">Pixelpulse2</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/playerctl-AppImage">playerctl</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/polybar-AppImage">polybar</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/puddletag-AppImage">puddletag</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Rnote-AppImage">Rnote</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/rofi-AppImage">rofi</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/scrcpy-AppImage">scrcpy</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/SpeedCrunch-AppImage">SpeedCrunch</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/st-AppImage">st</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/strawberry-AppImage">strawberry</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Sudachi-AppImage">Sudachi</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Torzu-AppImage">Torzu</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/transmission-qt-AppImage">transmission-qt</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/UnleashedRecomp-AppImage">UnleashedRecomp</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/xenia-canary-AppImage">xenia-canary</a></td></tr>
+    <tr><td></td><td><a href="https://github.com/pkgforge-dev/Zenity-GTK3-AppImage">Zenity</a></td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
 
 ---
 
